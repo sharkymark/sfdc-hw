@@ -27,7 +27,7 @@ def main():
                 # Query accounts
                 query = f"SELECT Id, Name, Description"
                 
-                additional_columns = input("Enter additional column names besides Id, Name, Description which are in the default query (comma-separated): ")
+                additional_columns = input("Enter additional column names comma-separated besides Id, Name, Description which are in the default query e.g., CreatedDate, Phone, Website, Type - see columns with input parameter `describe` on next query: ")
                 if additional_columns:
                     query += ", " + additional_columns
                 else:
@@ -48,7 +48,7 @@ def main():
                 for account in accounts['records']:
                     print(account['Id'], account['Name'], account['Description'], *[
 
-                        account[column] for column in additional_columns.split(', ')
+                        account[column] for column in additional_columns.split(', ') if column.strip() != ''
 
                     ])
 
