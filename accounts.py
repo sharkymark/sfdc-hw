@@ -24,6 +24,12 @@ def main():
                     print(field['name'])
 
             else:
+
+                # Check if the Salesforce connection is still active
+                if sf.session_id is None:
+                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+
+
                 # Query accounts
                 query = f"SELECT Id, Name, Description"
                 
@@ -43,6 +49,8 @@ def main():
                 if additional_columns:
                     columns = ['Id', 'Name', 'Description'] + [column.strip() for column in additional_columns.split(', ')]
                     print(*columns, sep='\t')  # Print column names
+                else:
+                    print('Id', 'Name', 'Description', sep='\t')  # Print default column names
 
                 # Print results
                 for account in accounts['records']:
