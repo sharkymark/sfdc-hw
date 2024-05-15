@@ -25,11 +25,6 @@ def main():
 
             else:
 
-                # Check if the Salesforce connection is still active
-                if sf.session_id is None:
-                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-
-
                 # Query accounts
                 query = f"SELECT Id, Name, Description"
                 
@@ -43,7 +38,11 @@ def main():
 
                 print("query: ", query)
 
-                accounts = sf.query(query)
+                try:
+                    accounts = sf.query(query)
+                except simple_salesforce.exceptions.SalesforceTimeout:
+                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                    accounts = sf.query(query)
 
                 # Print column headers
                 if additional_columns:
