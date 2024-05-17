@@ -40,8 +40,9 @@ def main():
 
                 try:
                     accounts = sf.query(query)
-                except simple_salesforce.exceptions.SalesforceTimeout:
+                except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                    sf.api_timeout = 300
                     accounts = sf.query(query)
 
                 # Print column headers
