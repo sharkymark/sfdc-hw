@@ -1,5 +1,6 @@
 import simple_salesforce
 import os
+import requests
 
 def main():
     username = os.environ['SALESFORCE_USERNAME']
@@ -8,6 +9,8 @@ def main():
 
     # Create a Salesforce connection
     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+
+    print("Connected to Salesforce - first time")
 
     while True:
         try:
@@ -42,7 +45,7 @@ def main():
                     accounts = sf.query(query)
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                    sf.api_timeout = 300
+                    print("Reconnectd to Salesforce")
                     accounts = sf.query(query)
 
                 # Print column headers
