@@ -59,3 +59,5 @@ This approach frees you up from having a specific Python version and module on y
 [Salesforce APIs](https://developer.salesforce.com/docs/apis)
 
 [Salesforce REST API](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm)
+
+[dev container spec](https://containers.dev/implementors/json_reference/)
