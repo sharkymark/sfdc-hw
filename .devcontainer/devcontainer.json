@@ -1,0 +1,27 @@
+{
+    "name": "Salesforce Account Lookup",
+    "build": {
+      "dockerfile": "../Dockerfile",
+      "context": ".."
+    },
+    "containerEnv": {
+      "SALESFORCE_USERNAME": "${localEnv:SALESFORCE_USERNAME}",
+      "SALESFORCE_PASSWORD": "${localEnv:SALESFORCE_PASSWORD}",
+      "SALESFORCE_SECURITY_TOKEN": "${localEnv:SALESFORCE_SECURITY_TOKEN}"
+    },
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "ms-python.python",
+          "GitHub.copilot",
+          "ms-python.pylance"
+        ],
+        "settings": { 
+          "terminal.integrated.shell.linux": "/bin/bash"
+        }  
+      }
+    },
+    "postCreateCommand": "python3 accounts.py"
+    }
+
+  

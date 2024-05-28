@@ -43,6 +43,13 @@ If the user wants to only use the default Id, Name and Description columns as ou
 
 The app runs as a while loop prompting the user for a value to filter Salesforce Account records by the Name column.
 
+
+## Dev Container
+
+Notice the `Dockerfile` and `devcontainer.json` which uses a slim Python container image, adds the `simple_salesforce` module with `pip` in the Dockerfile, and passes the Salesforce authentication environment variables into the dev container.
+
+This approach frees you up from having a specific Python version and module on your local machine e.g., Mac and let the dev container set all of this up. You do still need to set the environment variables locally which is more secure and better than putting into the repo with .gitignore. ☠️
+
 ## Resources
 
 [Python Mac versions](https://www.python.org/downloads/macos/)
