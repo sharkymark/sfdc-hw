@@ -81,8 +81,16 @@ def main():
                     ])
 
                 # bulk delete accounts, with logic for 1 or multiple accounts
+
                 if accounts['totalSize'] > 0:
                     if input("\nDelete accounts? (yes/no): ").lower() != 'no':
+
+                        if accounts['totalSize'] > 10:
+                            confirm = input(f"Warning: Deleting {accounts['totalSize']} accounts. Are you sure? (yes/no): ").lower()
+                            if confirm != 'yes':
+                                print("Deletion cancelled")
+                                return
+
                         account_ids = [account['Id'] for account in accounts['records']]
                         for account_id in account_ids:
                             sf.Account.delete(account_id)
