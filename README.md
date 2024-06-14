@@ -33,7 +33,7 @@ python3 accounts.py
 
 ## Additional columns
 
-Using the word `describe` will show the available columns for the Account object.
+Using the word `describe` will show the available columns for the Account and Contact objects.
 
 After providing a query filter parameter, the user is prompted for additional column names which will be comma-delimited. e.g., `CreatedDate, Phone, Website, Type`
 
@@ -41,7 +41,7 @@ If the user wants to only use the default Id, Name and Description columns as ou
 
 ## The app 
 
-The app runs as a while loop prompting the user for a value to filter Salesforce Account records by the Name column.
+The app runs as a while loop prompting the user for actions like creating accounts and contacts, describing the account and contact object schemas searching Salesforce Account records by the Name column with an option to retrieve contacts, searching contacts by name, title, email and a global settings for additional account and contact columns to retrieve.
 
 
 ## Dev Container
