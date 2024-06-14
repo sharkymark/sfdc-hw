@@ -36,12 +36,12 @@ def main():
     while True:
         try:
 
-            action = input("\nEnter 'sa' to search accounts, 'sc' to search contacts, 'ca' to create an account, 'cc' to create a contact, 'da' to delete an account, 'd' to describe object schemas, 's' for global settings, or 'q' to exit: ")
+            action = input("\nEnter 'sa' to search accounts, 'sc' to search contacts, 'ca' to create an account, 'cc' to create a contact, 'da' to delete an account, 'dc' to delete a contact, 'd' to describe object schemas, 's' for global settings, or 'q' to exit: ")
 
             if action.lower() == 'q':
                 break
 
-            elif action.lower() == 'create account':
+            elif action.lower() == 'ca':
                 name = input("Enter account name: ")
                 website = input("Enter account website: ")
                 description = input("Enter account description: ")
@@ -52,48 +52,53 @@ def main():
             elif action.lower() == 'cc':
 
 
-                account_name = input("\nAn account must already exist  to create a contact. Enter account name to lookup id: ")
+                account_name = input("\nAn account must already exist to create a contact. Enter account name to lookup id: ")
                 account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%'")
 
-                if account_results['totalSize'] > 1:
-                    print("Multiple accounts found:")
+                if account_results['totalSize'] == 0:
+                    print("\nNo accounts found")
+                elif account_results['totalSize'] == 1:
+                    account_id = account_results['records'][0]['Id']
+                    print(f"\nFound account: {account_results['records'][0]['Name']} with Id: {account_id}\n")
+                else:
+                    print("\nMultiple accounts found:")
                     for i, account in enumerate(account_results['records']):
                         print(f"{i+1}. {account['Name']}")
                     selection = int(input("Select the correct account (1-{account_results['totalSize']}): "))
                     account_id = account_results['records'][selection-1]['Id']
-                else:
-                    print(f"Found account: {account_results['records'][0]['Name']} with Id: {account_results['records'][0]['Id']}\n")
-                    account_id = account_results['records'][0]['Id']
 
-                first_name = input("Enter contact first name: ")
-                last_name = input("Enter contact last name: ")
-                email = input("Enter contact email: ")
-                description = input("Enter contact description: ")
-                phone = input("Enter contact phone: ")
-                title = input("Enter contact title: ")
-                department = input("Enter contact department: ")
-                address = input("Enter contact mailing address: ")
-                city = input("Enter contact city: ")
-                state = input("Enter contact state: ")
-                postalcode = input("Enter contact zip code: ")
-                country = input("Enter contact country: ")
-                contact = sf.Contact.create({
-                    'AccountId': account_id,
-                    'FirstName': first_name,
-                    'LastName': last_name,
-                    'Email': email,
-                    'Description': description,
-                    'Phone': phone,
-                    'Title': title,
-                    'Department': department,
-                    'MailingStreet': address,
-                    'MailingCity': city,
-                    'MailingState': state,
-                    'MailingPostalcode': postalcode,
-                    'MailingCountry': country   
-                })
-                contact_id = contact.get('id')  # Get the account ID from the response
-                print(f"\nCreated contact {contact_id}\n")
+                if 'account_id' in locals():
+                    # rest of the code remains the same
+
+                    first_name = input("Enter contact first name: ")
+                    last_name = input("Enter contact last name: ")
+                    email = input("Enter contact email: ")
+                    description = input("Enter contact description: ")
+                    phone = input("Enter contact phone: ")
+                    title = input("Enter contact title: ")
+                    department = input("Enter contact department: ")
+                    address = input("Enter contact mailing address: ")
+                    city = input("Enter contact city: ")
+                    state = input("Enter contact state: ")
+                    postalcode = input("Enter contact zip code: ")
+                    country = input("Enter contact country: ")
+                    contact = sf.Contact.create({
+                        'AccountId': account_id,
+                        'FirstName': first_name,
+                        'LastName': last_name,
+                        'Email': email,
+                        'Description': description,
+                        'Phone': phone,
+                        'Title': title,
+                        'Department': department,
+                        'MailingStreet': address,
+                        'MailingCity': city,
+                        'MailingState': state,
+                        'MailingPostalcode': postalcode,
+                        'MailingCountry': country   
+                    })
+                    contact_id = contact.get('id')  # Get the account ID from the response
+                    print(f"\nCreated contact {contact_id}\n")
 
             elif action.lower() == 'sa':
 
@@ -224,6 +229,46 @@ def main():
                         print("Invalid option")
                 else:
                     print("No accounts found")
+
+            elif action.lower() == 'dc':
+                contact_name = input("\nEnter a keyword to lookup contacts: ")
+                contacts = sf.query(f"SELECT Id, FirstName, LastName, Email, Title, Department, Phone FROM Contact WHERE FirstName LIKE '%{contact_name}%' OR LastName LIKE '%{contact_name}%' OR Email LIKE '%{contact_name}%'")
+
+                if contacts['totalSize'] > 0:
+                    print("\nContacts:")
+                    for i, contact in enumerate(contacts['records']):
+                        print(f"{i+1}. {contact['Id']}: {contact['FirstName']} {contact['LastName']} ({contact['Email']})")
+
+                    print("\nOptions:")
+                    print("1. Delete a specific contact by number in the list")
+                    print("2. Delete all contacts in the list")
+                    print("3. Cancel")
+
+                    option = int(input("Enter your option: "))
+
+                    if option == 1:
+                        contact_index = int(input("Enter the number of the contact to delete: "))
+                        if contact_index > 0 and contact_index <= contacts['totalSize']:
+                            contact_id = contacts['records'][contact_index-1]['Id']
+                            sf.Contact.delete(contact_id)
+                            print(f"Deleted contact {contact_id}")
+                        else:
+                            print("Invalid contact index")
+                    elif option == 2:
+                        delete_all = input("Are you sure you want to delete all contacts? (yes/no): ")
+                        if delete_all.lower() == 'yes':
+                            contact_ids = [contact['Id'] for contact in contacts['records']]
+                            for contact_id in contact_ids:
+                                sf.Contact.delete(contact_id)
+                                print(f"Deleted contact {contact_id}")
+                        else:
+                            print("Deletion cancelled")
+                    elif option == 3:
+                        print("No contacts deleted")
+                    else:
+                        print("Invalid option")
+                else:
+                    print("No contacts found")
 
             elif action.lower() == 'd':
                 print("\nDescribe the account object:\n")
