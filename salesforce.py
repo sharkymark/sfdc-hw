@@ -36,7 +36,16 @@ def main():
     while True:
         try:
 
-            action = input("\nEnter 'sa' to search accounts, 'sc' to search contacts, 'ca' to create an account, 'cc' to create a contact, 'da' to delete an account, 'dc' to delete a contact, 'd' to describe object schemas, 's' for global settings, or 'q' to exit: ")
+            action = input("""Enter:
+            'sa' to search accounts,
+            'sc' to search contacts,
+            'ca' to create an account,
+            'cc' to create a contact,
+            'da' to delete an account,
+            'dc' to delete a contact,
+            'd' to describe object schemas,
+            's' for global settings,
+            'q' to exit: """)
 
             if action.lower() == 'q':
                 break
@@ -73,9 +82,9 @@ def main():
                     first_name = input("Enter contact first name: ")
                     last_name = input("Enter contact last name: ")
                     email = input("Enter contact email: ")
-                    description = input("Enter contact description: ")
                     phone = input("Enter contact phone: ")
                     title = input("Enter contact title: ")
+                    description = input("Enter contact description: ")
                     department = input("Enter contact department: ")
                     address = input("Enter contact mailing address: ")
                     city = input("Enter contact city: ")

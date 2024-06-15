@@ -21,7 +21,7 @@
         }  
       }
     },
-    "postCreateCommand": "python3 accounts.py"
+    "postCreateCommand": "python3 salesforce.py"
     }
 
   
