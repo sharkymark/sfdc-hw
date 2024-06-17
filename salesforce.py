@@ -54,7 +54,15 @@ def main():
                 name = input("Enter account name: ")
                 website = input("Enter account website: ")
                 description = input("Enter account description: ")
-                account = sf.Account.create({'Name': name, 'Website': website, 'Description': description})
+
+                try:
+                    account = sf.Account.create({'Name': name, 'Website': website, 'Description': description})
+                except requests.exceptions.ConnectionError:
+                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                    print("\nReconnected to Salesforce\n")
+                    account = sf.Account.create({'Name': name, 'Website': website, 'Description': description})
+
+                
                 account_id = account.get('id')  # Get the account ID from the response
                 print(f"\nCreated account {account_id}\n")
 
@@ -62,7 +70,14 @@ def main():
 
 
                 account_name = input("\nAn account must already exist to create a contact. Enter account name to lookup id: ")
-                account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%'")
+
+                try:
+                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%'")
+                except requests.exceptions.ConnectionError:
+                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                    print("\nReconnected to Salesforce\n")
+                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%'")
+
 
                 if account_results['totalSize'] == 0:
                     print("\nNo accounts found")
@@ -182,7 +197,13 @@ def main():
 
             elif action.lower() == 'sc':
                 search_term = input("\nEnter a search term (first name, last name, email, or title): ")
-                contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
+
+                try:
+                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
+                except requests.exceptions.ConnectionError:
+                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                    print("\nReconnected to Salesforce\n")
+                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
 
                 if contacts['totalSize'] > 0:
                     print("\nContacts:")
@@ -201,81 +222,94 @@ def main():
 
             elif action.lower() == 'da':
                 account_name = input("\nEnter a keyword to lookup accounts: ")
-                accounts = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%'")
+
+                try:
+                    accounts = sf.query(f"SELECT Id, CreatedDate, Name FROM Account WHERE Name LIKE '%{account_name}%'")
+                except requests.exceptions.ConnectionError:
+                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                    print("\nReconnected to Salesforce\n")
+                    accounts = sf.query(f"SELECT Id, CreatedDate, Name FROM Account WHERE Name LIKE '%{account_name}%'")
+                
 
                 if accounts['totalSize'] > 0:
-                    print("\nAccounts:")
+                    print("\nAccounts: (Id, Name, CreatedDate)")
                     for i, account in enumerate(accounts['records']):
-                        print(f"{i+1}. {account['Id']}: {account['Name']}")
+                        print(f"{i+1}. {account['Id']}: {account['Name']} {account['CreatedDate']} ")
 
                     print("\nOptions:")
                     print("1. Delete a specific account by number in the list")
                     print("2. Delete all accounts in the list")
-                    print("3. Cancel")
+                    print("3. Cancel\n")
 
                     option = int(input("Enter your option: "))
 
                     if option == 1:
-                        account_index = int(input("Enter the number of the account to delete: "))
+                        account_index = int(input("\nEnter the number of the account to delete: "))
                         if account_index > 0 and account_index <= accounts['totalSize']:
                             account_id = accounts['records'][account_index-1]['Id']
                             sf.Account.delete(account_id)
-                            print(f"Deleted account {account_id}")
+                            print(f"\nDeleted account {account_id}")
                         else:
-                            print("Invalid account index")
+                            print("\nInvalid account index")
                     elif option == 2:
-                        delete_all = input("Are you sure you want to delete all accounts? (yes/no): ")
+                        delete_all = input("\nAre you sure you want to delete all accounts? (yes/no): ")
                         if delete_all.lower() == 'yes':
                             account_ids = [account['Id'] for account in accounts['records']]
                             for account_id in account_ids:
                                 sf.Account.delete(account_id)
-                                print(f"Deleted account {account_id}")
+                                print(f"\nDeleted account {account_id}")
                         else:
-                            print("Deletion cancelled")
+                            print("\nDeletion cancelled")
                     elif option == 3:
-                        print("No accounts deleted")
+                        print("\nNo accounts deleted")
                     else:
-                        print("Invalid option")
+                        print("\nInvalid option")
                 else:
-                    print("No accounts found")
+                    print("\nNo accounts found")
 
             elif action.lower() == 'dc':
                 contact_name = input("\nEnter a keyword to lookup contacts: ")
-                contacts = sf.query(f"SELECT Id, FirstName, LastName, Email, Title, Department, Phone FROM Contact WHERE FirstName LIKE '%{contact_name}%' OR LastName LIKE '%{contact_name}%' OR Email LIKE '%{contact_name}%'")
+
+                try:
+                    contacts = sf.query(f"SELECT Id, CreatedDate, FirstName, LastName, Email, Title, Department, Phone FROM Contact WHERE FirstName LIKE '%{contact_name}%' OR LastName LIKE '%{contact_name}%' OR Email LIKE '%{contact_name}%'")
+                except requests.exceptions.ConnectionError:
+                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                    print("\nReconnected to Salesforce\n")
+                    contacts = sf.query(f"SELECT Id, CreatedDate, FirstName, LastName, Email, Title, Department, Phone FROM Contact WHERE FirstName LIKE '%{contact_name}%' OR LastName LIKE '%{contact_name}%' OR Email LIKE '%{contact_name}%'")
 
                 if contacts['totalSize'] > 0:
-                    print("\nContacts:")
+                    print("\nContacts: (Id, FirstName, LastName, Email, CreatedDate)")
                     for i, contact in enumerate(contacts['records']):
-                        print(f"{i+1}. {contact['Id']}: {contact['FirstName']} {contact['LastName']} ({contact['Email']})")
+                        print(f"{i+1}. {contact['Id']}: {contact['FirstName']} {contact['LastName']} {contact['Email']} {contact['CreatedDate']}")
 
                     print("\nOptions:")
                     print("1. Delete a specific contact by number in the list")
                     print("2. Delete all contacts in the list")
-                    print("3. Cancel")
+                    print("3. Cancel\n")
 
-                    option = int(input("Enter your option: "))
+                    option = int(input("\nEnter your option: "))
 
                     if option == 1:
-                        contact_index = int(input("Enter the number of the contact to delete: "))
+                        contact_index = int(input("\nEnter the number of the contact to delete: "))
                         if contact_index > 0 and contact_index <= contacts['totalSize']:
                             contact_id = contacts['records'][contact_index-1]['Id']
                             sf.Contact.delete(contact_id)
-                            print(f"Deleted contact {contact_id}")
+                            print(f"\nDeleted contact {contact_id}")
                         else:
-                            print("Invalid contact index")
+                            print("\nInvalid contact index")
                     elif option == 2:
-                        delete_all = input("Are you sure you want to delete all contacts? (yes/no): ")
+                        delete_all = input("\nAre you sure you want to delete all contacts? (yes/no): ")
                         if delete_all.lower() == 'yes':
                             contact_ids = [contact['Id'] for contact in contacts['records']]
                             for contact_id in contact_ids:
                                 sf.Contact.delete(contact_id)
-                                print(f"Deleted contact {contact_id}")
+                                print(f"\nDeleted contact {contact_id}")
                         else:
-                            print("Deletion cancelled")
+                            print("\nDeletion cancelled")
                     elif option == 3:
-                        print("No contacts deleted")
+                        print("\nNo contacts deleted")
                     else:
-                        print("Invalid option")
+                        print("\nInvalid option")
                 else:
                     print("No contacts found")
 
