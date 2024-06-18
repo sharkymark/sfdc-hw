@@ -21,6 +21,10 @@ def change_settings():
         preferences['contact_additional_columns'] = ""
 
 def main():
+
+    firstconn = "\nConnected to Salesforce - first time\n"
+    reconn = "\Reconnected to Salesforce\n"
+
     username = os.environ['SALESFORCE_USERNAME']
     password = os.environ['SALESFORCE_PASSWORD']
     security_token = os.environ['SALESFORCE_SECURITY_TOKEN']
@@ -30,11 +34,16 @@ def main():
 
     # Create a Salesforce connection
     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-
-    print("\nConnected to Salesforce - first time\n")
+    print(firstconn)
 
     while True:
         try:
+
+            print("\x1b[5 q")
+
+            print("\n==============================================================================")
+            print("**Warning:** Admin users or those with elevated rights, proceed with caution!")
+            print("==============================================================================\n")
 
             action = input("""Enter:
             'sa' to search accounts,
@@ -45,7 +54,9 @@ def main():
             'dc' to delete a contact,
             'd' to describe object schemas,
             's' for global settings,
-            'q' to exit: """)
+            'q' to exit:
+            
+            """)
 
             if action.lower() == 'q':
                 break
@@ -59,7 +70,7 @@ def main():
                     account = sf.Account.create({'Name': name, 'Website': website, 'Description': description})
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                    print("\nReconnected to Salesforce\n")
+                    print(reconn)
                     account = sf.Account.create({'Name': name, 'Website': website, 'Description': description})
 
                 
@@ -75,7 +86,7 @@ def main():
                     account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%'")
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                    print("\nReconnected to Salesforce\n")
+                    print(reconn)
                     account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%'")
 
 
@@ -151,7 +162,7 @@ def main():
                         accounts = sf.query(query)
                     except requests.exceptions.ConnectionError:
                         sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                        print("\nReconnected to Salesforce\n")
+                        print(reconn)
                         accounts = sf.query(query)
 
                     # Print column headers
@@ -202,7 +213,7 @@ def main():
                     contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                    print("\nReconnected to Salesforce\n")
+                    print(reconn)
                     contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
 
                 if contacts['totalSize'] > 0:
@@ -227,7 +238,7 @@ def main():
                     accounts = sf.query(f"SELECT Id, CreatedDate, Name FROM Account WHERE Name LIKE '%{account_name}%'")
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                    print("\nReconnected to Salesforce\n")
+                    print(reconn)
                     accounts = sf.query(f"SELECT Id, CreatedDate, Name FROM Account WHERE Name LIKE '%{account_name}%'")
                 
 
@@ -274,7 +285,7 @@ def main():
                     contacts = sf.query(f"SELECT Id, CreatedDate, FirstName, LastName, Email, Title, Department, Phone FROM Contact WHERE FirstName LIKE '%{contact_name}%' OR LastName LIKE '%{contact_name}%' OR Email LIKE '%{contact_name}%'")
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                    print("\nReconnected to Salesforce\n")
+                    print(reconn)
                     contacts = sf.query(f"SELECT Id, CreatedDate, FirstName, LastName, Email, Title, Department, Phone FROM Contact WHERE FirstName LIKE '%{contact_name}%' OR LastName LIKE '%{contact_name}%' OR Email LIKE '%{contact_name}%'")
 
                 if contacts['totalSize'] > 0:
