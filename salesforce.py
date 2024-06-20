@@ -88,7 +88,7 @@ def main():
 
             action = input("""Enter:
             'sa' to search or update accounts (and contacts),
-            'sc' to search contacts,
+            'sc' to search or update contacts,
             'ca' to create an account,
             'cc' to create a contact,
             'da' to delete an account,
@@ -324,7 +324,8 @@ def main():
 
                 if contacts['totalSize'] > 0:
                     print("\nContacts:")
-                    for contact in contacts['records']:
+                    for i, contact in enumerate(contacts['records']):
+                        print(f"{i+1}.")
                         print(f"Id: {contact['Id']}")
                         print(f"First Name: {contact['FirstName']}")
                         print(f"Last Name: {contact['LastName']}")
@@ -334,6 +335,38 @@ def main():
                         print(f"Phone: {contact['Phone']}")
                         print(f"Mailing Address: {contact['MailingAddress']}")
                         print(f"Description: {contact['Description']}\n")
+
+                    while True:
+
+                        print("\nOptions:")
+                        print("1. Update a specific contact by number in the list")
+                        print("2. Cancel\n")
+                    
+                        try:
+                            option = int(input("Enter your option: "))
+                        except ValueError:
+                            print("\nInvalid entry. Please enter a valid number.")
+                            continue
+
+                        if option == 1:
+                            try:
+                                contact_index = int(input("\nEnter the number of the contact to update: "))
+                                if contact_index > 0 and contact_index <= contacts['totalSize']:
+                                    contact_id = contacts['records'][contact_index-1]['Id']
+                                    update_contact(sf, contact_id)
+                                    break
+                                else:
+                                    print("\nInvalid contact index")
+                            except ValueError:
+                                print("\nInvalid entry. Please enter a valid number.")
+
+                        elif option == 2:
+                            print("\nUpdate cancelled")
+                            break
+                        else:
+                            print("\nInvalid contact index")                    
+                            continue   
+
                 else:
                     print("No contacts found")
 
