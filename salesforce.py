@@ -20,6 +20,47 @@ def change_settings():
     else:
         preferences['contact_additional_columns'] = ""
 
+def update_account(sf, account_id):
+    account = sf.Account.get(account_id)
+    print(f"\nUpdating account {account['Name']}:")
+
+    new_name = input(f"Enter new name ({account['Name']}): ")
+    new_website = input(f"Enter new website ({account['Website']}): ")
+    new_description = input(f"Enter new description ({account['Description']}): ")
+
+    if new_name.strip():
+        account['Name'] = new_name
+    if new_website.strip():
+        account['Website'] = new_website
+    if new_description.strip():
+        account['Description'] = new_description
+
+    sf.Account.update(account_id, {'Name': account['Name'], 'Website': account['Website'], 'Description': account['Description']})
+    print(f"\nUpdated account {account_id}")
+
+def update_contact(sf, contact_id):
+    contact = sf.Contact.get(contact_id)
+    print(f"\nUpdating contact {contact['FirstName']} {contact['LastName']}:")
+    new_first_name = input(f"Enter new first name ({contact['FirstName']}): ")
+    new_last_name = input(f"Enter new last name ({contact['LastName']}): ")
+    new_email = input(f"Enter new email ({contact['Email']}): ")
+    new_title = input(f"Enter new title ({contact['Title']}): ")
+
+    if new_first_name.strip():
+        contact['FirstName'] = new_first_name
+    if new_last_name.strip():
+        contact['LastName'] = new_last_name
+    if new_email.strip():
+        contact['Email'] = new_email
+    if new_title.strip():
+        contact['Title'] = new_title
+
+    # Remove the Id field from the contact dictionary
+    #contact.pop('Id')
+
+    sf.Contact.update(contact_id, {'FirstName': contact['FirstName'], 'LastName': contact['LastName'], 'Email': contact['Email'], 'Title': contact['Title']})
+    print(f"\nUpdated contact {contact_id}")
+
 def main():
 
     firstconn = "\nConnected to Salesforce - first time\n"
@@ -46,10 +87,12 @@ def main():
             print("==============================================================================\n")
 
             action = input("""Enter:
-            'sa' to search accounts,
+            'sa' to search or update accounts (and contacts),
             'sc' to search contacts,
             'ca' to create an account,
             'cc' to create a contact,
+            'ua' to search accounts,
+            'uc' to search contacts,
             'da' to delete an account,
             'dc' to delete a contact,
             'd' to describe object schemas,
@@ -156,6 +199,7 @@ def main():
                     query += f" FROM ACCOUNT WHERE Name LIKE '%{account_name}%'"
 
                     print("\nAccounts query: ", query)
+
                     print("\nAccounts:\n")
 
                     try:
@@ -165,47 +209,111 @@ def main():
                         print(reconn)
                         accounts = sf.query(query)
 
-                    # Print column headers
-                    if preferences['account_additional_columns']:
-                        columns = ['Id', 'Name', 'Description', 'Website'] + [column.strip() for column in preferences['account_additional_columns'].split(', ')]
-                        print(*columns, sep='\t')  # Print column names
-                    else:
-                        print('Id', 'Name', 'Description', 'Website', sep='\t')  # Print default column names
+                    if accounts['totalSize'] > 0:
 
-                    # Print results
-                    for account in accounts['records']:
-                        print(account['Id'], account['Name'], account['Description'], account.get('Website', ''), *[
-
-                            account[column] for column in preferences['account_additional_columns'].split(', ') if column.strip() != ''
-
-                        ])
-
-                    # Get contacts for the account
-                    if preferences['show_contacts']:
-                        contact_query = f"SELECT Id, FirstName, LastName, Email, Title, Phone, Description"
-                        if preferences['contact_additional_columns']:
-                            contact_query += ", " + preferences['contact_additional_columns']
-                        contact_query += f" FROM Contact WHERE AccountId = '{account['Id']}'"
-
-                        contacts = sf.query(contact_query)
-                        print("\nContacts query: ", contact_query)
-                        print("\nContacts:\n")
-
-                        if preferences['contact_additional_columns']:
-                            contact_columns = ['Id', 'FirstName', 'LastName', 'Email', 'Title', 'Phone', 'Description'] + [column.strip() for column in preferences['contact_additional_columns'].split(', ')]
-                            print(*contact_columns, sep='\t')
+                        # Print column headers
+                        if preferences['account_additional_columns']:
+                            columns = ['Id', 'Name', 'Description', 'Website'] + [column.strip() for column in preferences['account_additional_columns'].split(', ')]
+                            print(*columns, sep='\t')  # Print column names
                         else:
-                            print("Id", "FirstName", "LastName", "Email","Title","Phone","Description", sep='\t')
+                            print('Id', 'Name', 'Description', 'Website', sep='\t')  # Print default column names
 
-                        for contact in contacts['records']:
-                            print(contact.__dict__)
-                            print(contact['Id'], contact['FirstName'], contact['LastName'], contact['Email'], contact['Title'], contact['Phone'], contact['Description'], *[
-                                contact.get(column) for column in preferences['contact_additional_columns'].split(', ') if column.strip() != ''
+                        # Print results
+                        for i, account in enumerate(accounts['records']):
+                            print(f"{i+1}.", account['Id'], account['Name'], account['Description'], account.get('Website', ''), *[
+                                account[column] for column in preferences['account_additional_columns'].split(', ') if column.strip() != ''
                             ])
 
+                        exit_loop = False
 
+                        while True:
+
+                            print("\nOptions:")
+                            print("1. Update a specific account by number in the list")
+                            print("2. Cancel\n")
+                        
+                            try:
+                                option = int(input("Enter your option: "))
+                            except ValueError:
+                                print("\nInvalid entry. Please enter a valid number.")
+                                continue
+                        
+                            if option == 1:
+                                account_index = int(input("\nEnter the number of the account to update: "))
+                                if account_index > 0 and account_index <= accounts['totalSize']:
+                                    account_id = accounts['records'][account_index-1]['Id']
+                                    update_account(sf, account_id)
+                            elif option == 2:
+                                print("\nUpdate cancelled")
+                            else:
+                                print("\nInvalid account index")
+                                break
+
+                            # Get contacts for the account
+                            if preferences['show_contacts']:
+                                contact_query = f"SELECT Id, FirstName, LastName, Email, Title, Phone, Description"
+                                if preferences['contact_additional_columns']:
+                                    contact_query += ", " + preferences['contact_additional_columns']
+                                contact_query += f" FROM Contact WHERE AccountId = '{account['Id']}'"
+
+                                contacts = sf.query(contact_query)
+                                print("\nContacts query: ", contact_query)
+                                print("\nContacts:\n")
+
+                                if preferences['contact_additional_columns']:
+                                    contact_columns = ['Id', 'FirstName', 'LastName', 'Email', 'Title', 'Phone', 'Description'] + [column.strip() for column in preferences['contact_additional_columns'].split(', ')]
+                                    print(*contact_columns, sep='\t')
+                                else:
+                                    print("Id", "FirstName", "LastName", "Email","Title","Phone","Description", sep='\t')
+
+                                if contacts['totalSize'] > 0:
+                                    for i, contact in enumerate(contacts['records']):
+                                        print(f"{i+1}.", contact['Id'], contact['FirstName'], contact['LastName'], contact['Email'], contact['Title'], contact['Phone'], contact['Description'], *[
+                                            contact.get(column) for column in preferences['contact_additional_columns'].split(', ') if column.strip() != ''
+                                        ])
+
+                                    while True:
+
+                                        print("\nOptions:")
+                                        print("1. Update a specific contact by number in the list")
+                                        print("2. Cancel\n")
+
+                                        try:
+                                            option = int(input("Enter your option: "))
+                                        except ValueError:
+                                            print("\nInvalid entry. Please enter a valid number.")
+                                            continue
+
+                                        if option == 1:
+                                            try:
+                                                contact_index = int(input("\nEnter the number of the contact to update: "))
+                                                if contact_index > 0 and contact_index <= contacts['totalSize']:
+                                                    contact_id = contacts['records'][contact_index-1]['Id']
+                                                    update_contact(sf, contact_id)
+                                                    exit_loop = True
+                                                    break
+                                                else:
+                                                    print("\nInvalid contact index")
+                                            except ValueError:
+                                                print("\nInvalid entry. Please enter a valid number.")
+                                            break
+                                        elif option == 2:
+                                            print("\nUpdate cancelled")
+                                            exit_loop = True
+                                            break
+
+                                    if exit_loop:
+                                        exit_loop = False  # Reset exit_loop to False
+                                        break
+
+                                else:
+                                    print("No contacts found")
+                            exit_loop = True
+                            break
+
+                    else:
+                        print("No accounts found")
                     
-
             elif action.lower() == 'sc':
                 search_term = input("\nEnter a search term (first name, last name, email, or title): ")
 
