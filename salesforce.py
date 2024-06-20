@@ -91,8 +91,6 @@ def main():
             'sc' to search contacts,
             'ca' to create an account,
             'cc' to create a contact,
-            'ua' to search accounts,
-            'uc' to search contacts,
             'da' to delete an account,
             'dc' to delete a contact,
             'd' to describe object schemas,
