@@ -39,7 +39,8 @@ The app runs as a while loop prompting the user for actions like:
 1. creating accounts and contacts
 1. describing the account and contact object schemas
 1. searching Salesforce Account records by the Name column with an option to retrieve contacts
-1. Within account search, be able to delete accounts and contacts by row
+1. Within account search, be able to update accounts and contacts by row
+1. deleting accounts and contacts
 1. searching contacts by name, title, email
 1. a global settings for additional account and contact columns to retrieve.
 
