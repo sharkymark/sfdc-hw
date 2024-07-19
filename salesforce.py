@@ -1,6 +1,7 @@
 import simple_salesforce
 import os
 import requests
+import lunar_interceptor
 
 def set_default_settings():
     global preferences
