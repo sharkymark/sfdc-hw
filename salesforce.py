@@ -161,15 +161,78 @@ def delete_contacts(sf, query):
         print("No contacts found")
 
 
+def get_contacts(sf, account_id):
+
+    # Get contacts for the account
+    if preferences['show_contacts']:
+        contact_query = f"SELECT Id, FirstName, LastName, Email, Title, Phone, Description"
+        if preferences['contact_additional_columns']:
+            contact_query += ", " + preferences['contact_additional_columns']
+        contact_query += f" FROM Contact WHERE AccountId = '{account_id}'"
+
+        contacts = sf.query(contact_query)
+        print("\nContacts query: ", contact_query)
+        print("\nContacts:\n")
+
+        if preferences['contact_additional_columns']:
+            contact_columns = ['Id', 'FirstName', 'LastName', 'Email', 'Title', 'Phone', 'Description'] + [column.strip() for column in preferences['contact_additional_columns'].split(', ')]
+            print(*contact_columns, sep='\t')
+        else:
+            print("Id", "FirstName", "LastName", "Email","Title","Phone","Description", sep='\t')
+
+        if contacts['totalSize'] > 0:
+            for i, contact in enumerate(contacts['records']):
+                print(f"{i+1}.", contact['Id'], contact['FirstName'], contact['LastName'], contact['Email'], contact['Title'], contact['Phone'], contact['Description'], *[
+                    contact.get(column) for column in preferences['contact_additional_columns'].split(', ') if column.strip() != ''
+                ])
+
+            while True:
+
+                print("\nOptions:")
+                print("1. Update a specific contact by number in the list")
+                print("2. Cancel\n")
+
+                try:
+                    option = int(input("Enter your option: "))
+                except ValueError:
+                    print("\nInvalid entry. Please enter a valid number.")
+                    continue
+
+                if option == 1:
+                    try:
+                        contact_index = int(input("\nEnter the number of the contact to update: "))
+                        if contact_index > 0 and contact_index <= contacts['totalSize']:
+                            contact_id = contacts['records'][contact_index-1]['Id']
+                            update_contact(sf, contact_id)
+                            exit_loop = True
+                            break
+                        else:
+                            print("\nInvalid contact index")
+                    except ValueError:
+                        print("\nInvalid entry. Please enter a valid number.")
+                    break
+                elif option == 2:
+                    print("\nUpdate cancelled")
+                    exit_loop = True
+                    break
+
+                if exit_loop:
+                    exit_loop = False  # Reset exit_loop to False
+                    break
+
+        else:
+            print("No contacts found")
 
 def main():
 
     firstconn = "\nConnected to Salesforce - first time\n"
-    reconn = "\Reconnected to Salesforce\n"
+    reconn = "\nReconnected to Salesforce\n"
 
     username = os.environ['SALESFORCE_USERNAME']
     password = os.environ['SALESFORCE_PASSWORD']
     security_token = os.environ['SALESFORCE_SECURITY_TOKEN']
+
+    exit_loop = False
 
     # Set default settings when the program starts
     set_default_settings()
@@ -329,7 +392,8 @@ def main():
 
                             print("\nOptions:")
                             print("1. Update a specific account by number in the list")
-                            print("2. Cancel\n")
+                            print("2. Retrieve contacts by a specific account in the list")
+                            print("3. Cancel and return to main menu\n")
                         
                             try:
                                 option = int(input("Enter your option: "))
@@ -343,75 +407,21 @@ def main():
                                     account_id = accounts['records'][account_index-1]['Id']
                                     update_account(sf, account_id)
                             elif option == 2:
-                                print("\nUpdate cancelled")
+                                account_index = int(input("\nEnter the number of the account to retrieve contacts: "))
+                                if account_index > 0 and account_index <= accounts['totalSize']:
+                                    account_id = accounts['records'][account_index-1]['Id']
+                                    get_contacts(sf, account_id)
+                                else:
+                                    print("\nInvalid account index")
+                            elif option == 3:
+                                print("\nUpdate or Retrieve Contacts cancelled")
+                                break
                             else:
                                 print("\nInvalid account index")
                                 break
 
-                            # Get contacts for the account
-                            if preferences['show_contacts']:
-                                contact_query = f"SELECT Id, FirstName, LastName, Email, Title, Phone, Description"
-                                if preferences['contact_additional_columns']:
-                                    contact_query += ", " + preferences['contact_additional_columns']
-                                contact_query += f" FROM Contact WHERE AccountId = '{account['Id']}'"
-
-                                contacts = sf.query(contact_query)
-                                print("\nContacts query: ", contact_query)
-                                print("\nContacts:\n")
-
-                                if preferences['contact_additional_columns']:
-                                    contact_columns = ['Id', 'FirstName', 'LastName', 'Email', 'Title', 'Phone', 'Description'] + [column.strip() for column in preferences['contact_additional_columns'].split(', ')]
-                                    print(*contact_columns, sep='\t')
-                                else:
-                                    print("Id", "FirstName", "LastName", "Email","Title","Phone","Description", sep='\t')
-
-                                if contacts['totalSize'] > 0:
-                                    for i, contact in enumerate(contacts['records']):
-                                        print(f"{i+1}.", contact['Id'], contact['FirstName'], contact['LastName'], contact['Email'], contact['Title'], contact['Phone'], contact['Description'], *[
-                                            contact.get(column) for column in preferences['contact_additional_columns'].split(', ') if column.strip() != ''
-                                        ])
-
-                                    while True:
-
-                                        print("\nOptions:")
-                                        print("1. Update a specific contact by number in the list")
-                                        print("2. Cancel\n")
-
-                                        try:
-                                            option = int(input("Enter your option: "))
-                                        except ValueError:
-                                            print("\nInvalid entry. Please enter a valid number.")
-                                            continue
-
-                                        if option == 1:
-                                            try:
-                                                contact_index = int(input("\nEnter the number of the contact to update: "))
-                                                if contact_index > 0 and contact_index <= contacts['totalSize']:
-                                                    contact_id = contacts['records'][contact_index-1]['Id']
-                                                    update_contact(sf, contact_id)
-                                                    exit_loop = True
-                                                    break
-                                                else:
-                                                    print("\nInvalid contact index")
-                                            except ValueError:
-                                                print("\nInvalid entry. Please enter a valid number.")
-                                            break
-                                        elif option == 2:
-                                            print("\nUpdate cancelled")
-                                            exit_loop = True
-                                            break
-
-                                    if exit_loop:
-                                        exit_loop = False  # Reset exit_loop to False
-                                        break
-
-                                else:
-                                    print("No contacts found")
-                            exit_loop = True
-                            break
-
                     else:
-                        print("No accounts found")
+                        print("No accounts found")                     
                     
             elif action.lower() == 'sc':
                 search_term = input("\nEnter a search term (first name, last name, email, or title): ")
