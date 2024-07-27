@@ -42,6 +42,8 @@ The app runs as a while loop prompting the user for actions like:
 1. Within account search, be able to update accounts and contacts by row
 1. deleting accounts and contacts
 1. searching contacts by name, title, email with an option to update them
+1. show picklists values for account and contact objects
+1. allow picklist support for: lead source (contact), type (account), and industry (account)
 1. a global settings for additional account and contact columns to retrieve.
 
 ## Dev Container
