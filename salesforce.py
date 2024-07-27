@@ -22,6 +22,11 @@ def change_settings():
         preferences['contact_additional_columns'] = ""
     preferences['max_delete_records'] = int(input("\nEnter the maximum number of records to delete at one time (e.g., 10): ")) 
 
+def display_account(account_id,account):
+
+    print(f"\nCreated account {account_id}\n")
+    print(f"Account Id: {account_id}\nName: {name}\nIndustry: {industry_value}\nType: {type_value}\nDescription: {description}\nWebsite: {website}")
+
 def update_account(sf, account_id):
     account = sf.Account.get(account_id)
     print(f"\nUpdating account {account['Name']}:")
@@ -30,15 +35,49 @@ def update_account(sf, account_id):
     new_website = input(f"Enter new website ({account['Website']}): ")
     new_description = input(f"Enter new description ({account['Description']}): ")
 
-    if new_name.strip():
-        account['Name'] = new_name
-    if new_website.strip():
-        account['Website'] = new_website
-    if new_description.strip():
-        account['Description'] = new_description
+    print(f"Industry picklist values ({account['Industry']}):")
+    for i, option in enumerate(industry_options):
+        print(f"{i+1}. {option['value']}")
 
-    sf.Account.update(account_id, {'Name': account['Name'], 'Website': account['Website'], 'Description': account['Description']})
-    print(f"\nUpdated account {account_id}")
+    try:
+        industry_choice = int(input("Enter the number for the Industry (0 to skip): "))
+
+        if industry_choice > 0 and industry_choice <= len(industry_options):
+            new_industry_value = industry_options[industry_choice - 1]['value']
+        else:
+            new_industry_value = ''
+    except ValueError:
+        new_industry_value = ''
+
+    print("Account Type picklist values:")
+    for i, option in enumerate(type_options):
+        print(f"{i+1}. {option['value']}")
+    
+    try:
+        type_choice = int(input("Enter the number for the Account Type (0 to skip): "))
+        
+        if type_choice > 0 and type_choice <= len(type_options):
+            new_type_value = type_options[type_choice - 1]['value']
+        else:
+            new_type_value = ''
+    except ValueError:
+        new_type_value = ''
+
+    if new_name:
+        account['Name'] = new_name
+    if new_website:
+        account['Website'] = new_website
+    if new_description:
+        account['Description'] = new_description
+    if new_industry_value:
+        account['Industry'] = new_industry_value
+    if new_type_value:
+        account['Type'] = new_type_value
+
+    sf.Account.update(account_id, {'Name': account['Name'], 'Website': account['Website'], 'Description': account['Description'], 'Industry': account['Industry'], 'Type': account['Type']})
+    print(f"\nUpdated account")
+
+    print(f"Account Id: {account_id}\nName: {account['Name']}\nIndustry: {account['Industry']}\nType: {account['Type']}\nDescription: {account['Description']}\nWebsite: {account.get('Website')}")
 
 def update_contact(sf, contact_id):
     contact = sf.Contact.get(contact_id)
@@ -48,20 +87,39 @@ def update_contact(sf, contact_id):
     new_email = input(f"Enter new email ({contact['Email']}): ")
     new_title = input(f"Enter new title ({contact['Title']}): ")
 
-    if new_first_name.strip():
+    print(f"Lead Source picklist values: ({contact['LeadSource']})")
+    for i, option in enumerate(lead_source_options):
+        print(f"{i+1}. {option['value']}")
+
+    try:
+        lead_source_choice = int(input("Enter the number for the Lead Source: "))
+
+        if lead_source_choice > 0 and lead_source_choice <= len(lead_source_options):
+            new_lead_source_value = lead_source_options[lead_source_choice - 1]['value']
+        else:
+            new_lead_source_value = ''
+    except ValueError:
+        new_lead_source_value = ''
+
+    new_description = input(f"Enter new description ({contact['Description']}): ")
+
+    if new_first_name:
         contact['FirstName'] = new_first_name
-    if new_last_name.strip():
+    if new_last_name:
         contact['LastName'] = new_last_name
-    if new_email.strip():
+    if new_email:
         contact['Email'] = new_email
-    if new_title.strip():
+    if new_title:
         contact['Title'] = new_title
+    if new_lead_source_value:
+        contact['LeadSource'] = new_lead_source_value
+    if new_description:
+        contact['Description'] = new_description
 
-    # Remove the Id field from the contact dictionary
-    #contact.pop('Id')
 
-    sf.Contact.update(contact_id, {'FirstName': contact['FirstName'], 'LastName': contact['LastName'], 'Email': contact['Email'], 'Title': contact['Title']})
-    print(f"\nUpdated contact {contact_id}")
+    sf.Contact.update(contact_id, {'FirstName': contact['FirstName'], 'LastName': contact['LastName'], 'Email': contact['Email'], 'Title': contact['Title'], 'LeadSource': contact['LeadSource'], 'Description': new_description})
+    print(f"\nUpdated contact")
+    print(f"Contact Id: {contact_id}\nFirst Name: {contact['FirstName']}\nLast Name: {contact['LastName']}\nEmail: {contact['Email']}\nTitle: {contact['Title']}\nLead Source: {contact['LeadSource']}\nDescription: {contact['Description']}")
 
 def delete_accounts(sf, query):
     try:
@@ -223,6 +281,22 @@ def get_contacts(sf, account_id):
         else:
             print("No contacts found")
 
+def get_account_picklists(sf):
+    account_fields = sf.Account.describe()
+    picklists = {}
+    for field in account_fields['fields']:
+        if field['type'] == 'picklist':
+            picklists[field['name']] = field['picklistValues']
+    return picklists
+
+def get_contact_picklists(sf):
+    contact_fields = sf.Contact.describe()
+    picklists = {}
+    for field in contact_fields['fields']:
+        if field['type'] == 'picklist':
+            picklists[field['name']] = field['picklistValues']
+    return picklists
+
 def main():
 
     firstconn = "\nConnected to Salesforce - first time\n"
@@ -232,6 +306,10 @@ def main():
     password = os.environ['SALESFORCE_PASSWORD']
     security_token = os.environ['SALESFORCE_SECURITY_TOKEN']
 
+    global lead_source_options
+    global industry_options
+    global type_options
+
     exit_loop = False
 
     # Set default settings when the program starts
@@ -240,6 +318,14 @@ def main():
     # Create a Salesforce connection
     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
     print(firstconn)
+
+    account_picklists = get_account_picklists(sf)
+    contact_picklists = get_contact_picklists(sf)
+
+    # Access picklist values for a specific field
+    lead_source_options = contact_picklists.get('LeadSource', [])
+    industry_options = account_picklists.get('Industry', [])
+    type_options = account_picklists.get('Type', [])
 
     while True:
         try:
@@ -258,6 +344,7 @@ def main():
             'da' to delete an account,
             'dc' to delete a contact,
             'd' to describe object schemas,
+            'pl' to show account, contact picklists,
             'p' for global preferences,
             'q' to exit:
             
@@ -266,21 +353,65 @@ def main():
             if action.lower() == 'q':
                 break
 
+            elif action.lower() == 'pl':
+                print("\nAccount Picklists:\n")
+                account_picklists = sf.Account.describe()['fields']
+                for field in account_picklists:
+                    if field['picklistValues']:
+                        print(f"{field['name']}:")
+                        for value in field['picklistValues']:
+                            print(f"  {value['value']}")                
+                print("\nContact Picklists:\n")
+                contact_picklists = sf.Contact.describe()['fields']
+                for field in contact_picklists:
+                    if field['picklistValues']:
+                        print(f"{field['name']}:")
+                        for value in field['picklistValues']:
+                            print(f"  {value['value']}")
+
             elif action.lower() == 'ca':
                 name = input("Enter account name: ")
                 website = input("Enter account website: ")
                 description = input("Enter account description: ")
 
+                print("Industry picklist values:")
+                for i, option in enumerate(industry_options):
+                    print(f"{i+1}. {option['value']}")
+                
                 try:
-                    account = sf.Account.create({'Name': name, 'Website': website, 'Description': description})
+                    industry_choice = int(input("Enter the number for the Industry (0 to skip): "))
+                    if industry_choice > 0 and industry_choice <= len(industry_options):
+                        industry_value = industry_options[industry_choice - 1]['value']
+                    else:
+                        industry_value = ''
+                except ValueError:
+                    industry_value = ''
+
+                print("Account Type picklist values:")
+                for i, option in enumerate(type_options):
+                    print(f"{i+1}. {option['value']}")
+                
+                try:
+                    type_choice = int(input("Enter the number for the Account Type (0 to skip): "))
+                
+                    if type_choice > 0 and type_choice <= len(type_options):
+                        type_value = type_options[type_choice - 1]['value']
+                    else:
+                        type_value = ''
+                except ValueError:
+                    type_value = ''
+
+                try:
+                    account = sf.Account.create({'Name': name, 'Website': website, 'Description': description, 'Industry': industry_value, 'Type': type_value})
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
                     print(reconn)
-                    account = sf.Account.create({'Name': name, 'Website': website, 'Description': description})
+                    account = sf.Account.create({'Name': name, 'Website': website, 'Description': description, 'Industry': industry_value, 'Type': type_value})
 
                 
                 account_id = account.get('id')  # Get the account ID from the response
                 print(f"\nCreated account {account_id}\n")
+                print(f"Account Id: {account_id}\nName: {name}\nIndustry: {industry_value}\nType: {type_value}\nDescription: {description}\nWebsite: {website}")
 
             elif action.lower() == 'cc':
 
@@ -316,6 +447,20 @@ def main():
                     phone = input("Enter contact phone: ")
                     title = input("Enter contact title: ")
                     description = input("Enter contact description: ")
+                    print("Lead Source picklist values:")
+                    for i, option in enumerate(lead_source_options):
+                        print(f"{i+1}. {option['value']}")
+
+                    try:
+                        lead_source_choice = int(input("Enter the number for the Lead Source: "))
+
+                        if lead_source_choice > 0 and lead_source_choice <= len(lead_source_options):
+                            lead_source_value = lead_source_options[lead_source_choice - 1]['value']
+                        else:
+                            lead_source_value = ''
+                    except ValueError:
+                        lead_source_value = ''
+
                     department = input("Enter contact department: ")
                     address = input("Enter contact mailing address: ")
                     city = input("Enter contact city: ")
@@ -328,6 +473,7 @@ def main():
                         'LastName': last_name,
                         'Email': email,
                         'Description': description,
+                        'LeadSource': lead_source_value,
                         'Phone': phone,
                         'Title': title,
                         'Department': department,
@@ -351,7 +497,7 @@ def main():
                 else:
 
                     # Query accounts
-                    query = f"SELECT Id, Name, Description, Website"
+                    query = f"SELECT Id, Name, Description, Website, Industry"
                     
                     if preferences['account_additional_columns']:
                         query += ", " + preferences['account_additional_columns']
@@ -378,11 +524,11 @@ def main():
                             columns = ['Id', 'Name', 'Description', 'Website'] + [column.strip() for column in preferences['account_additional_columns'].split(', ')]
                             print(*columns, sep='\t')  # Print column names
                         else:
-                            print('Id', 'Name', 'Description', 'Website', sep='\t')  # Print default column names
+                            print('Id', 'Name', 'Industry', 'Description', 'Website', sep='\t')  # Print default column names
 
                         # Print results
                         for i, account in enumerate(accounts['records']):
-                            print(f"{i+1}.", account['Id'], account['Name'], account['Description'], account.get('Website', ''), *[
+                            print(f"{i+1}.", account['Id'], account['Name'], account['Industry'], account['Description'], account.get('Website', ''), *[
                                 account[column] for column in preferences['account_additional_columns'].split(', ') if column.strip() != ''
                             ])
 
@@ -427,11 +573,11 @@ def main():
                 search_term = input("\nEnter a search term (first name, last name, email, or title): ")
 
                 try:
-                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
+                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
                     print(reconn)
-                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
+                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
 
                 if contacts['totalSize'] > 0:
                     print("\nContacts:")
@@ -441,6 +587,7 @@ def main():
                         print(f"First Name: {contact['FirstName']}")
                         print(f"Last Name: {contact['LastName']}")
                         print(f"Title: {contact['Title']}")
+                        print(f"Lead Source: {contact['LeadSource']}")
                         print(f"Department: {contact['Department']}")
                         print(f"Email: {contact['Email']}")
                         print(f"Phone: {contact['Phone']}")
