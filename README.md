@@ -36,11 +36,10 @@ Alternatively, see the dev container approach below which autostarts the app.
 ## The app 
 
 The app runs as a while loop prompting the user for actions like:
-1. creating accounts and contacts
+1. creating & updating accounts, contacts, opportunities and opportunity contact roles
 1. describing the account and contact object schemas
 1. searching Salesforce Account records by the Name column with an option to retrieve contacts
-1. Within account search, be able to update accounts and contacts by row
-1. deleting accounts and contacts
+1. deleting accounts, contacts and opportunity contact roles
 1. searching contacts by name, title, email with an option to update them
 1. show picklists values for account and contact objects
 1. allow picklist support for: lead source (contact), type (account), and industry (account)
