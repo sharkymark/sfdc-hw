@@ -923,12 +923,16 @@ def main():
                     account_id = account_results['records'][0]['Id']
                     print(f"\nFound account: {account_results['records'][0]['Name']} with Id: {account_id}\n")
                 else:
-                    print("\nMultiple accounts found:")
+                    print("\nMultiple accounts\n")
                     for i, account in enumerate(account_results['records']):
                         print(f"{i+1}. {account['Name']}")
-                    selection = int(input(f"Select the correct account (1-{account_results['totalSize']}): "))
-                    account_id = account_results['records'][selection-1]['Id']
-                    account_name = account_results['records'][selection-1]['Name']
+                    try:
+                        selection = int(input(f"Select the correct account (1-{account_results['totalSize']}): "))
+                        account_id = account_results['records'][selection-1]['Id']
+                        account_name = account_results['records'][selection-1]['Name']
+                    except ValueError:
+                        print("\nInvalid entry. Please enter a valid number.")
+                        continue
 
                 if 'account_id' in locals():
 
@@ -1064,11 +1068,15 @@ def main():
                     account_id = account_results['records'][0]['Id']
                     print(f"\nFound account: {account_results['records'][0]['Name']} with Id: {account_id}\n")
                 else:
-                    print("\nMultiple accounts found:")
+                    print("\nMultiple accounts found:\n")
                     for i, account in enumerate(account_results['records']):
                         print(f"{i+1}. {account['Name']}")
-                    selection = int(input("Select the correct account (1-{account_results['totalSize']}): "))
-                    account_id = account_results['records'][selection-1]['Id']
+                    try:
+                        selection = int(input("Select the correct account (1-{account_results['totalSize']}): "))
+                        account_id = account_results['records'][selection-1]['Id']
+                    except ValueError:
+                        print("\nInvalid entry. Please enter a valid number.")
+                        continue
 
                 if 'account_id' in locals():
                     # rest of the code remains the same
