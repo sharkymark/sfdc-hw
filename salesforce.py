@@ -1,7 +1,6 @@
 import simple_salesforce
 import os
 import datetime
-from prettytable import PrettyTable
 import requests
 
 def set_default_settings():
