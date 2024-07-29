@@ -779,6 +779,8 @@ def get_opportunities(sf, opp_name, stagename, sort, datefilter):
         print(reconn)
         opps = sf.query(query)
 
+    total_amount = 0
+
     if opps['totalSize'] > 0:
 
         # Print column headers
@@ -786,8 +788,18 @@ def get_opportunities(sf, opp_name, stagename, sort, datefilter):
 
         # Print results
         for i, opp in enumerate(opps['records']):
+            amount_value = opp.get("Amount", 0)
+            total_amount += amount_value
             account = get_accountdetails(sf, opp['AccountId'])
             print(f"{i+1}.", account['Name'], opp['Name'], opp['Type'], opp['LeadSource'], opp['StageName'], opp['CloseDate'], opp['Amount'])
+
+        # Print the total amount after iterating through opportunities
+        print(f"\nTotal amount: {total_amount}")
+
+        print("\nFilters:")
+        print(f"Sales stages: {stagename}")
+        print(f"Sort: {sort}")
+        print(f"Date filter: {datefilter or 'None'}")
 
         return opps
 
@@ -821,7 +833,7 @@ def search_opportunities(sf):
             print("\nOptions:")
             print("1. Retrieve details by a specific opportunity in the list")
             print("2. Update a specific opportunity in the list")
-            print("3. Cancel and return to name search but reuse other filters")
+            print("3. Change search and reuse other filters")
             print("4. Cancel and return to main menu\n")
         
             try:
@@ -867,7 +879,7 @@ def search_opportunities(sf):
                     
 
 def get_opp_details(opp):
-    print(f"\nOpportunity Details:")
+    print(f"\nOpportunity Details:") 
 
     print(f"\nName: {opp['Name']}")
     print(f"Sales Stage: {opp['StageName']}")
