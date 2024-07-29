@@ -921,6 +921,7 @@ def main():
                     print("\nNo accounts found")
                 elif account_results['totalSize'] == 1:
                     account_id = account_results['records'][0]['Id']
+                    full_account_name = account_results['records'][0]['Name']
                     print(f"\nFound account: {account_results['records'][0]['Name']} with Id: {account_id}\n")
                 else:
                     print("\nMultiple accounts\n")
@@ -929,7 +930,7 @@ def main():
                     try:
                         selection = int(input(f"Select the correct account (1-{account_results['totalSize']}): "))
                         account_id = account_results['records'][selection-1]['Id']
-                        account_name = account_results['records'][selection-1]['Name']
+                        full_account_name = account_results['records'][selection-1]['Name']
                     except ValueError:
                         print("\nInvalid entry. Please enter a valid number.")
                         continue
@@ -999,7 +1000,7 @@ def main():
 
                     opportunity_id = opportunity.get('id')
                     print(f"\nCreated opportunity {opportunity_id}\n")
-                    print(f"Opportunity Id: {opportunity_id}\nAccount Name: {account_name}\nName: {name}\nType: {type_value}\nStage: {stage_value}\nLead Source: {source_value}\nClose Date: {close_date}\nAmount: {amount}\nDescription: {description}\nNext Step: {next_step}\n")
+                    print(f"Opportunity Id: {opportunity_id}\nAccount Name: {full_account_name}\nName: {name}\nType: {type_value}\nStage: {stage_value}\nLead Source: {source_value}\nClose Date: {close_date}\nAmount: {amount}\nDescription: {description}\nNext Step: {next_step}\n")
 
 
 
