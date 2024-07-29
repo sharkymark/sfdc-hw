@@ -236,7 +236,7 @@ def delete_contacts(sf, query):
         print("No contacts found")
 
 
-def get_contacts(sf, account_id):
+def get_contacts_for_account(sf, account_id):
 
     # Get contacts for the account
     if preferences['show_contacts']:
@@ -1201,7 +1201,7 @@ def main():
                                 account_index = int(input("\nEnter the number of the account to retrieve contacts: "))
                                 if account_index > 0 and account_index <= accounts['totalSize']:
                                     account_id = accounts['records'][account_index-1]['Id']
-                                    get_contacts(sf, account_id)
+                                    get_contacts_for_account(sf, account_id)
                                 else:
                                     print("\nInvalid account index")
                             elif option == 3:
