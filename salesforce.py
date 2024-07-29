@@ -254,7 +254,7 @@ def get_contacts_for_account(sf, account_id):
         contact_query = f"SELECT Id, FirstName, LastName, Email, Title, Phone, Description"
         if preferences['contact_additional_columns']:
             contact_query += ", " + preferences['contact_additional_columns']
-        contact_query += f" FROM Contact WHERE AccountId = '{account_id}'"
+        contact_query += f" FROM Contact WHERE AccountId = '{account_id}' ORDER BY LastName"
 
         contacts = sf.query(contact_query)
         print("\nContacts query: ", contact_query)
@@ -312,7 +312,7 @@ def get_contacts_for_account(sf, account_id):
 def get_contactdetails(sf, contact_id):
 
     # Fetch contact information
-    contact_query = f"SELECT Id, AccountId, FirstName, LastName, Title, Email FROM Contact WHERE Id = '{contact_id}'"
+    contact_query = f"SELECT Id, AccountId, FirstName, LastName, Title, Email FROM Contact WHERE Id = '{contact_id}' ORDER BY LastName"
     contact_result = sf.query(contact_query)
 
     if contact_result['totalSize'] > 0:
@@ -322,8 +322,8 @@ def get_contactdetails(sf, contact_id):
 
 def get_accountdetails(sf, account_id):
 
-    # Fetch contact information
-    account_query = f"SELECT Id, Name, Type, Industry, Description, Website FROM Account WHERE Id = '{account_id}'"
+    # Fetch account information
+    account_query = f"SELECT Id, Name, Type, Industry, Description, Website FROM Account WHERE Id = '{account_id}' ORDER BY Name"
     account_result = sf.query(account_query)
 
     if account_result['totalSize'] > 0:
@@ -336,11 +336,11 @@ def get_contacts(sf):
     search_term = input("\nEnter a search term (first name, last name, email, or title): ")
 
     try:
-        contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
+        contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' ORDER BY LastName")
     except requests.exceptions.ConnectionError:
         sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
         print(reconn)
-        contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
+        contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' ORDER BY LastName")
 
     if contacts['totalSize'] > 0:
         print("\nContacts:")
@@ -682,7 +682,7 @@ def get_opportunities(sf, opp_name):
     # Query opps
     query = f"SELECT Id, AccountId, Name, Type, LeadSource, StageName, CloseDate, Amount, Description, NextStep"
 
-    query += f" FROM OPPORTUNITY WHERE Name LIKE '%{opp_name}%'"
+    query += f" FROM OPPORTUNITY WHERE Name LIKE '%{opp_name}%' ORDER BY Name"
 
     print("\nOpportunities query: ", query)
 
@@ -921,11 +921,11 @@ def main():
                 account_name = input("\nAn account must already exist to create an opportunity. Enter account name to lookup id: ")
 
                 try:
-                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%'")
+                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name")
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
                     print(reconn)
-                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%'")
+                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name")
 
 
                 if account_results['totalSize'] == 0:
@@ -1067,11 +1067,11 @@ def main():
                 account_name = input("\nAn account must already exist to create a contact. Enter account name to lookup id: ")
 
                 try:
-                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%'")
+                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name")
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
                     print(reconn)
-                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%'")
+                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name")
 
 
                 if account_results['totalSize'] == 0:
@@ -1229,11 +1229,11 @@ def main():
                 search_term = input("\nEnter a search term (first name, last name, email, or title): ")
 
                 try:
-                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
+                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' ORDER BY LastName")
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
                     print(reconn)
-                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%'")
+                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' ORDER BY LastName")
 
                 if contacts['totalSize'] > 0:
                     print("\nContacts:")
@@ -1290,12 +1290,12 @@ def main():
                 if account_name.lower() == 'quit':
                     break
                 else:
-                    query = f"SELECT Id, CreatedDate, Name FROM Account WHERE Name LIKE '%{account_name}%'"
+                    query = f"SELECT Id, CreatedDate, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name"
                     delete_accounts(sf, query)
 
             elif action.lower() == 'dc':
                 contact_name = input("\nEnter a partial name or email to lookup contacts to delete: ")
-                query = f"SELECT Id, CreatedDate, FirstName, LastName, Email, Title, Department, Phone FROM Contact WHERE FirstName LIKE '%{contact_name}%' OR LastName LIKE '%{contact_name}%' OR Email LIKE '%{contact_name}%'"
+                query = f"SELECT Id, CreatedDate, FirstName, LastName, Email, Title, Department, Phone FROM Contact WHERE FirstName LIKE '%{contact_name}%' OR LastName LIKE '%{contact_name}%' OR Email LIKE '%{contact_name}%' ORDER BY LastName"
                 delete_contacts(sf, query)
 
             elif action.lower() == 'd':
