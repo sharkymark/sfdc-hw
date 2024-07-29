@@ -238,6 +238,17 @@ def delete_contacts(sf, query):
 
 def get_contacts_for_account(sf, account_id):
 
+    account = get_accountdetails(sf, account_id)
+
+    print(f"\nAccount: {account['Name']}")
+    print(f"Industry: {account['Industry']}")
+    print(f"Type: {account['Type']}")
+    print(f"Website: {account['Website']}")
+    print(f"Account Id: {account_id}\n")
+    print(f"Description: {account.get('Description')}\n")
+
+
+
     # Get contacts for the account
     if preferences['show_contacts']:
         contact_query = f"SELECT Id, FirstName, LastName, Email, Title, Phone, Description"
@@ -312,7 +323,7 @@ def get_contactdetails(sf, contact_id):
 def get_accountdetails(sf, account_id):
 
     # Fetch contact information
-    account_query = f"SELECT Id, Name, Industry FROM Account WHERE Id = '{account_id}'"
+    account_query = f"SELECT Id, Name, Type, Industry, Description, Website FROM Account WHERE Id = '{account_id}'"
     account_result = sf.query(account_query)
 
     if account_result['totalSize'] > 0:
@@ -1073,7 +1084,7 @@ def main():
                     for i, account in enumerate(account_results['records']):
                         print(f"{i+1}. {account['Name']}")
                     try:
-                        selection = int(input("Select the correct account (1-{account_results['totalSize']}): "))
+                        selection = int(input(f"Select the correct account (1-{account_results['totalSize']}): "))
                         account_id = account_results['records'][selection-1]['Id']
                     except ValueError:
                         print("\nInvalid entry. Please enter a valid number.")
@@ -1142,14 +1153,14 @@ def main():
                 else:
 
                     # Query accounts
-                    query = f"SELECT Id, Name, Description, Website, Industry"
+                    query = f"SELECT Id, Name, Type, Website, Industry"
                     
                     if preferences['account_additional_columns']:
                         query += ", " + preferences['account_additional_columns']
                     else:
                         query += " "
 
-                    query += f" FROM ACCOUNT WHERE Name LIKE '%{account_name}%'"
+                    query += f" FROM ACCOUNT WHERE Name LIKE '%{account_name}%' ORDER BY Name"
 
                     print("\nAccounts query: ", query)
 
@@ -1166,14 +1177,14 @@ def main():
 
                         # Print column headers
                         if preferences['account_additional_columns']:
-                            columns = ['Id', 'Name', 'Description', 'Website'] + [column.strip() for column in preferences['account_additional_columns'].split(', ')]
+                            columns = ['Id', 'Name', 'Type', 'Industry', 'Website'] + [column.strip() for column in preferences['account_additional_columns'].split(', ')]
                             print(*columns, sep='\t')  # Print column names
                         else:
-                            print('Id', 'Name', 'Industry', 'Description', 'Website', sep='\t')  # Print default column names
+                            print('Id', 'Name', 'Type', 'Industry', 'Website', sep='\t')  # Print default column names
 
                         # Print results
                         for i, account in enumerate(accounts['records']):
-                            print(f"{i+1}.", account['Id'], account['Name'], account['Industry'], account['Description'], account.get('Website', ''), *[
+                            print(f"{i+1}.", account['Id'], account['Name'], account['Type'], account['Industry'], account.get('Website', ''), *[
                                 account[column] for column in preferences['account_additional_columns'].split(', ') if column.strip() != ''
                             ])
 
@@ -1183,7 +1194,7 @@ def main():
 
                             print("\nOptions:")
                             print("1. Update a specific account by number in the list")
-                            print("2. Retrieve contacts by a specific account in the list")
+                            print("2. Retrieve account details and contacts by a specific account in the list")
                             print("3. Cancel and return to main menu\n")
                         
                             try:
