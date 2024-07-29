@@ -1,6 +1,7 @@
 import simple_salesforce
 import os
 import datetime
+import calendar
 import requests
 
 def set_default_settings():
@@ -677,12 +678,95 @@ def update_opportunity(sf, opp):
     
     sf.Opportunity.update(opp['Id'], {'Name': opp['Name'], 'CloseDate': opp['CloseDate'], 'Amount': opp['Amount'], 'Description': opp['Description'], 'NextStep': opp['NextStep'], 'Type': opp['Type'], 'LeadSource': opp['LeadSource'], 'StageName': opp['StageName']})
 
-def get_opportunities(sf, opp_name):
+def build_filter_clause(filter_type):
+  """Builds the WHERE clause for the SQL query based on the filter type."""
+  now = datetime.datetime.now()
+  current_year = now.year
+  next_year = current_year + 1
+  current_quarter = (now.month - 1) // 3 + 1
+
+  # Use date literals for comparisons within WHERE clause
+  if filter_type == 1:  # Current Quarter
+    start_date = datetime.date(current_year, (current_quarter - 1) * 3 + 1, 1).strftime('%Y-%m-%d')
+    end_date = datetime.date(current_year, current_quarter * 3, calendar.monthrange(current_year, current_quarter * 3)[1]).strftime('%Y-%m-%d')
+    filter_clause = f"AND CloseDate >= {start_date} AND CloseDate <= {end_date}"
+  elif filter_type == 2:  # Next Quarter
+    next_quarter = current_quarter + 1 if current_quarter < 4 else 1
+    next_year = current_year + 1 if next_quarter == 1 else current_year
+    start_date = datetime.date(next_year, (next_quarter - 1) * 3 + 1, 1).strftime('%Y-%m-%d')
+    end_date = datetime.date(next_year, next_quarter * 3, calendar.monthrange(next_year, next_quarter * 3)[1]).strftime('%Y-%m-%d')
+    filter_clause = f"AND CloseDate >= {start_date} AND CloseDate <= {end_date}"
+  elif filter_type == 3:  # Current Calendar Year
+    filter_clause = f"AND CloseDate >= {current_year}-01-01 AND CloseDate < {current_year+1}-01-01"  # Use YEAR function for year comparison
+  elif filter_type == 4:  # Next Calendar Year
+    filter_clause = f"AND CloseDate >= {next_year}-01-01 AND CloseDate < {next_year+1}-01-01"
+  else:
+    filter_clause = ""  # No filter
+
+  return filter_clause
+
+
+
+def get_opportunities(sf, opp_name, stagename, sort, datefilter):
+
+
+    print("\nOpportunity filter options:")
+    print("1. Open")
+    print("2. Closed won")
+    print("3. Closed lost\n")
+
+    try:
+        option = int(input("Enter your option: "))
+    except ValueError:
+        print("\nInvalid entry. Will filter open opportunities only.")
+        option = 1
+
+    stagename = ""
+
+    if option == 1:
+        stagename = " AND (StageName <> 'Closed Won' OR StageName <> 'Closed Lost')"
+    elif option == 2:
+        stagename = " AND StageName = 'Closed Won'"
+    elif option == 3:
+        stagename = " AND StageName = 'Closed Lost'"
+
+    print("\nSort options:")
+    print("1. Close Date")
+    print("2. Opportunity Name A-Z")
+    print("3. Revenue Amount descending\n")
+
+    try:
+        option = int(input("Enter your option: "))
+    except ValueError:
+        print("\nInvalid entry. Will sort by Amount descending.")
+        option = 1
+
+    if option == 1:
+        sort = "CloseDate"
+    elif option == 2:
+        sort = "Name"
+    elif option == 3:
+        sort = "Amount DESC"
+
+    print("\nDate period options:")
+    print("1. Current quarter")
+    print("2. Next quarter")
+    print("3. Current calendar year")
+    print("4. Next calendar year")
+    print("5. No date filter\n")
+
+    try:
+        option = int(input("Enter your option: "))
+    except ValueError:
+        print("\nInvalid entry. All")
+        option = 5
+
+    datefilter = build_filter_clause(option)
 
     # Query opps
     query = f"SELECT Id, AccountId, Name, Type, LeadSource, StageName, CloseDate, Amount, Description, NextStep"
 
-    query += f" FROM OPPORTUNITY WHERE Name LIKE '%{opp_name}%' ORDER BY Name"
+    query += f" FROM OPPORTUNITY WHERE Name LIKE '%{opp_name}%' {datefilter} {stagename} ORDER BY {sort}"
 
     print("\nOpportunities query: ", query)
 
@@ -710,26 +794,35 @@ def get_opportunities(sf, opp_name):
     else:
         print("No opportunities found") 
 
+
 def search_opportunities(sf):
 
-    # Get the opportunity name to filter by from the user
-    opp_name = input("\nEnter the opportunity name to filter by or 'quit' to exit): ")
 
-    if opp_name.lower() == 'quit':
-        return
+    opp_name = ""
+    stagename = ""
+    sort = ""
+    datefilter = ""
 
-    else:
+    while True:
 
-        
+        # Get the opportunity name to filter by from the user
+        opp_name = input("\nEnter the opportunity name to filter by or 'quit' to exit): ")
+
+        if opp_name.lower() == 'quit':
+            break
 
         while True:
 
-            opps = get_opportunities(sf, opp_name)
+            opps = get_opportunities(sf, opp_name, stagename, sort, datefilter)
+
+            if opps is None:
+                return
 
             print("\nOptions:")
             print("1. Retrieve details by a specific opportunity in the list")
             print("2. Update a specific opportunity in the list")
-            print("3. Cancel and return to main menu\n")
+            print("3. Cancel and return to name search but reuse other filters")
+            print("4. Cancel and return to main menu\n")
         
             try:
                 option = int(input("Enter your option: "))
@@ -765,10 +858,13 @@ def search_opportunities(sf):
             elif option == 3:
                 print("\nOpportunity action cancelled")
                 break
+            elif option == 4:
+                print("\nOpportunity action cancelled")
+                return
             else:
                 print("\nInvalid opportunity index")
                 break
-                        
+                    
 
 def get_opp_details(opp):
     print(f"\nOpportunity Details:")
