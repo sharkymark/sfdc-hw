@@ -274,11 +274,15 @@ def get_contacts_for_account(sf, account_id):
                     contact.get(column) for column in preferences['contact_additional_columns'].split(', ') if column.strip() != ''
                 ])
 
+            
             while True:
 
                 print("\nOptions:")
                 print("1. Update a specific contact by number in the list")
-                print("2. Cancel\n")
+                print("2. Return to account menu")
+                print("3. Create a task for a specific contact in the list")
+                print("4. List tasks for a specific contact in the list")
+                print("5. Exit to main menu\n")
 
                 try:
                     option = int(input("Enter your option: "))
@@ -303,6 +307,31 @@ def get_contacts_for_account(sf, account_id):
                     print("\nUpdate cancelled")
                     exit_loop = True
                     break
+
+                elif option == 3:
+                    try:
+                        contact_index = int(input("\nEnter the number of the contact to create an activity for: "))
+                        if contact_index > 0 and contact_index <= contacts['totalSize']:
+                            contact_id = contacts['records'][contact_index-1]['Id']
+                            account_id = contacts['records'][contact_index-1]['AccountId']
+                            create_task(sf, contact_id, account_id)
+                        else:
+                            print("\nInvalid contact index")
+                    except ValueError:
+                        print("\nInvalid entry. Please enter a valid number.")
+                elif option == 4:
+                    try:
+                        contact_index = int(input("\nEnter the number of the contact to list tasks for: "))
+                        if contact_index > 0 and contact_index <= contacts['totalSize']:
+                            contact_id = contacts['records'][contact_index-1]['Id']
+                            tasks = get_tasks(sf, contact_id)
+                            exit_loop = True
+                        else:
+                            print("\nInvalid contact index")
+                    except ValueError:
+                        print("\nInvalid entry. Please enter a valid number.")
+                elif option == 5:
+                    exit_loop = True
 
                 if exit_loop:
                     exit_loop = False  # Reset exit_loop to False
