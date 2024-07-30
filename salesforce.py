@@ -253,7 +253,7 @@ def get_contacts_for_account(sf, account_id):
 
     # Get contacts for the account
     if preferences['show_contacts']:
-        contact_query = f"SELECT Id, FirstName, LastName, Email, Title, Phone, Description"
+        contact_query = f"SELECT Id, AccountId, FirstName, LastName, Email, Title, Phone, Description"
         if preferences['contact_additional_columns']:
             contact_query += ", " + preferences['contact_additional_columns']
         contact_query += f" FROM Contact WHERE AccountId = '{account_id}' ORDER BY LastName"
@@ -315,6 +315,7 @@ def get_contacts_for_account(sf, account_id):
                             contact_id = contacts['records'][contact_index-1]['Id']
                             account_id = contacts['records'][contact_index-1]['AccountId']
                             create_task(sf, contact_id, account_id)
+                            exit_loop = True
                         else:
                             print("\nInvalid contact index")
                     except ValueError:
