@@ -928,13 +928,9 @@ def get_opp_contact_role_picklists(sf):
 
 def main():
 
-    firstconn = "\nConnected to Salesforce - first time\n"
-    reconn = "\nReconnected to Salesforce\n"
-
-    username = os.environ['SALESFORCE_USERNAME']
-    password = os.environ['SALESFORCE_PASSWORD']
-    security_token = os.environ['SALESFORCE_SECURITY_TOKEN']
-
+    global username
+    global password
+    global security_token
     global lead_source_options
     global industry_options
     global type_options
@@ -942,6 +938,13 @@ def main():
     global stage_options
     global opp_lead_source_options
     global opp_contact_role_options
+
+    username = os.environ['SALESFORCE_USERNAME']
+    password = os.environ['SALESFORCE_PASSWORD']
+    security_token = os.environ['SALESFORCE_SECURITY_TOKEN']
+    firstconn = "\nConnected to Salesforce - first time\n"
+    reconn = "\nReconnected to Salesforce\n"
+
 
     exit_loop = False
 
