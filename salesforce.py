@@ -711,7 +711,7 @@ def update_opportunity(sf, opp):
 
 def build_filter_clause(filter_type):
   """Builds the WHERE clause for the SQL query based on the filter type."""
-  now = datetime.datetime.now()
+  now = datetime.now()
   current_year = now.year
   next_year = current_year + 1
   current_quarter = (now.month - 1) // 3 + 1
