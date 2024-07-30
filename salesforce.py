@@ -314,7 +314,7 @@ def get_contacts_for_account(sf, account_id):
                         if contact_index > 0 and contact_index <= contacts['totalSize']:
                             contact_id = contacts['records'][contact_index-1]['Id']
                             account_id = contacts['records'][contact_index-1]['AccountId']
-                            create_task(sf, contact_id, account_id)
+                            create_task(sf, contact_id, account_id, opp_id)
                             exit_loop = True
                         else:
                             print("\nInvalid contact index")
@@ -325,7 +325,8 @@ def get_contacts_for_account(sf, account_id):
                         contact_index = int(input("\nEnter the number of the contact to list tasks for: "))
                         if contact_index > 0 and contact_index <= contacts['totalSize']:
                             contact_id = contacts['records'][contact_index-1]['Id']
-                            tasks = get_tasks(sf, contact_id)
+                            opp_id = ""
+                            get_tasks(sf, contact_id, opp_id)
                             exit_loop = True
                         else:
                             print("\nInvalid contact index")
@@ -731,6 +732,8 @@ def build_filter_clause(filter_type):
     filter_clause = f"AND CloseDate >= {current_year}-01-01 AND CloseDate < {current_year+1}-01-01"  # Use YEAR function for year comparison
   elif filter_type == 4:  # Next Calendar Year
     filter_clause = f"AND CloseDate >= {next_year}-01-01 AND CloseDate < {next_year+1}-01-01"
+  elif filter_type == 5:
+    filter_clause = "None" # No filter
   else:
     filter_clause = ""  # No filter
 
@@ -740,64 +743,72 @@ def build_filter_clause(filter_type):
 
 def get_opportunities(sf, opp_name, stagename, sort, datefilter):
 
+    if not stagename:
+        print("\nOpportunity filter options:")
+        print("1. Open")
+        print("2. Closed won")
+        print("3. Closed lost\n")
 
-    print("\nOpportunity filter options:")
-    print("1. Open")
-    print("2. Closed won")
-    print("3. Closed lost\n")
+        try:
+            option = int(input("Enter your option: "))
+        except ValueError:
+            print("\nInvalid entry. Will filter open opportunities only.")
+            option = 1
 
-    try:
-        option = int(input("Enter your option: "))
-    except ValueError:
-        print("\nInvalid entry. Will filter open opportunities only.")
-        option = 1
+        stagename = ""
 
-    stagename = ""
+        if option == 1:
+            stagename = " AND (StageName <> 'Closed Won' OR StageName <> 'Closed Lost')"
+        elif option == 2:
+            stagename = " AND StageName = 'Closed Won'"
+        elif option == 3:
+            stagename = " AND StageName = 'Closed Lost'"
+    
 
-    if option == 1:
-        stagename = " AND (StageName <> 'Closed Won' OR StageName <> 'Closed Lost')"
-    elif option == 2:
-        stagename = " AND StageName = 'Closed Won'"
-    elif option == 3:
-        stagename = " AND StageName = 'Closed Lost'"
+    if not sort:
+        print("\nSort options:")
+        print("1. Close Date")
+        print("2. Opportunity Name A-Z")
+        print("3. Revenue Amount descending\n")
 
-    print("\nSort options:")
-    print("1. Close Date")
-    print("2. Opportunity Name A-Z")
-    print("3. Revenue Amount descending\n")
+        try:
+            option = int(input("Enter your option: "))
+        except ValueError:
+            print("\nInvalid entry. Will sort by Amount descending.")
+            option = 1
 
-    try:
-        option = int(input("Enter your option: "))
-    except ValueError:
-        print("\nInvalid entry. Will sort by Amount descending.")
-        option = 1
+        if option == 1:
+            sort = "CloseDate"
+        elif option == 2:
+            sort = "Name"
+        elif option == 3:
+            sort = "Amount DESC"
 
-    if option == 1:
-        sort = "CloseDate"
-    elif option == 2:
-        sort = "Name"
-    elif option == 3:
-        sort = "Amount DESC"
+    if not datefilter:
+        print("\nDate period options:")
+        print("1. Current quarter")
+        print("2. Next quarter")
+        print("3. Current calendar year")
+        print("4. Next calendar year")
+        print("5. No date filter\n")
 
-    print("\nDate period options:")
-    print("1. Current quarter")
-    print("2. Next quarter")
-    print("3. Current calendar year")
-    print("4. Next calendar year")
-    print("5. No date filter\n")
+        try:
+            option = int(input("Enter your option: "))
+        except ValueError:
+            print("\nInvalid entry. All")
+            option = 5
 
-    try:
-        option = int(input("Enter your option: "))
-    except ValueError:
-        print("\nInvalid entry. All")
-        option = 5
-
-    datefilter = build_filter_clause(option)
+        datefilter = build_filter_clause(option)
 
     # Query opps
     query = f"SELECT Id, AccountId, Name, Type, LeadSource, StageName, CloseDate, Amount, Description, NextStep"
 
-    query += f" FROM OPPORTUNITY WHERE Name LIKE '%{opp_name}%' {datefilter} {stagename} ORDER BY {sort}"
+    if datefilter == "None":
+        finaldatefilter = ""
+    else:
+        finaldatefilter = datefilter
+
+    query += f" FROM OPPORTUNITY WHERE Name LIKE '%{opp_name}%' {finaldatefilter} {stagename} ORDER BY {sort}"
 
     print("\nOpportunities query: ", query)
 
@@ -832,7 +843,7 @@ def get_opportunities(sf, opp_name, stagename, sort, datefilter):
         print(f"Sort: {sort}")
         print(f"Date filter: {datefilter or 'None'}")
 
-        return opps
+        return opps, stagename, sort, datefilter
 
     else:
         print("No opportunities found") 
@@ -856,7 +867,7 @@ def search_opportunities(sf):
 
         while True:
 
-            opps = get_opportunities(sf, opp_name, stagename, sort, datefilter)
+            opps, stagename, sort, datefilter = get_opportunities(sf, opp_name, stagename, sort, datefilter)
 
             if opps is None:
                 return
@@ -864,8 +875,10 @@ def search_opportunities(sf):
             print("\nOptions:")
             print("1. Retrieve details by a specific opportunity in the list")
             print("2. Update a specific opportunity in the list")
-            print("3. Change search and reuse other filters")
-            print("4. Cancel and return to main menu\n")
+            print("3. Create a task for a specific opportunity in the list")
+            print("4. List tasks for a specific opportunity in the list")
+            print("5. Change search and reuse other filters")
+            print("6. Cancel and return to main menu\n")
         
             try:
                 option = int(input("Enter your option: "))
@@ -899,9 +912,34 @@ def search_opportunities(sf):
                 except ValueError:
                     print("\nInvalid entry. Please enter a valid number.")
             elif option == 3:
+                try:
+                    opp_index = int(input("\nEnter the number of the opportunity to create a task for: "))
+                    if opp_index > 0 and opp_index <= opps['totalSize']:
+                        opp_id = opps['records'][opp_index-1]['Id']
+                        account_id = ""
+                        contact_id = ""
+                        create_task(sf, contact_id, account_id, opp_id)
+                    else:
+                        print("\nInvalid opp index")
+                except ValueError:
+                    print("\nInvalid entry. Please enter a valid number.")
+            elif option == 4:
+                try:
+                    opp_index = int(input("\nEnter the number of the opportunity to list tasks for: "))
+                    if opp_index > 0 and opp_index <= opps['totalSize']:
+                        opp_id = opps['records'][opp_index-1]['Id']
+                        account_id = ""
+                        contact_id = ""
+                        get_tasks(sf, contact_id, opp_id)
+                        break
+                    else:
+                        print("\nInvalid opp index")
+                except ValueError:
+                    print("\nInvalid entry. Please enter a valid number.")
+            elif option == 5:
                 print("\nOpportunity action cancelled")
                 break
-            elif option == 4:
+            elif option == 6:
                 print("\nOpportunity action cancelled")
                 return
             else:
@@ -925,7 +963,7 @@ def get_opp_details(opp):
     print(f"\nAccount Id: {opp['AccountId']}")
     print(f"Opportunity Id: {opp['Id']}")
 
-def create_task(sf, contact_id, account_id):
+def create_task(sf, contact_id, account_id, opp_id):
 
     print("\nSubject picklist values:\n")
     for i, option in enumerate(subject_options):
@@ -946,12 +984,17 @@ def create_task(sf, contact_id, account_id):
 
     description = input("\nEnter the description of the task: ")
 
-    associate_with_account = input("\nAssociate with Account? (y/n): ")
-
-    if associate_with_account.lower() == 'y':
+    if account_id:
+        what = "Account"
         what_id = account_id
+    elif opp_id:
+        what = "Opportunity"
+        what_id = opp_id
     else:
+        what = ""
         what_id = ""
+
+    associate_with_what = input(f"\nAssociate with {what}? (y/n): ")
 
     try:
         sf.Task.create({
@@ -998,9 +1041,14 @@ def format_datetime(dt_str):
     dt = datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S.%f%z")
     return dt.strftime("%Y-%m-%d %I:%M %p")
 
-def get_tasks(sf, contact_id):
+def get_tasks(sf, contact_id, opp_id):
 
-    query = f"SELECT Id, Subject, Description, Status, Priority, CreatedDate, CreatedById, Who.FirstName, Who.LastName, Account.Name, CreatedBy.Name FROM Task WHERE WhoId = '{contact_id}' ORDER BY CreatedDate DESC"
+    if contact_id:
+        who_what_query = f", Who.FirstName, Who.LastName, WhoId FROM Task WHERE WhoId = '{contact_id}'"
+    elif opp_id:
+        who_what_query = f", WhatId FROM Task WHERE WhatId = '{opp_id}'"
+     
+    query = f"SELECT Id, Subject, Description, Status, Priority, CreatedDate, CreatedById, Account.Name, CreatedBy.Name{who_what_query} ORDER BY CreatedDate DESC"
 
     print("\nTasks query: ", query)
 
@@ -1019,14 +1067,13 @@ def get_tasks(sf, contact_id):
         for i, task in enumerate(tasks['records']):
             print(f"\n{i+1}.")
             print(f"{format_datetime(task['CreatedDate'])}")
-            print(f"From: {task['CreatedBy']['Name']}")
-            print(f"To: {task['Who']['FirstName']} {task['Who']['LastName']}")
+            if contact_id:
+                print(f"To: {task['Who']['FirstName']} {task['Who']['LastName']}")
+            print(f"Created by: {task['CreatedBy']['Name']}")
             print(f"Subject: ", task['Subject'])
             print(f"Description: ", task['Description'])
             print(f"Status: ", task['Status'])
             print(f"Priority: ", task['Priority'])
-
-        return tasks
 
     else:
         print("No tasks found")
@@ -1097,7 +1144,7 @@ def search_contacts(sf):
                         if contact_index > 0 and contact_index <= contacts['totalSize']:
                             contact_id = contacts['records'][contact_index-1]['Id']
                             account_id = contacts['records'][contact_index-1]['AccountId']
-                            create_task(sf, contact_id, account_id)
+                            create_task(sf, contact_id, account_id, opp_id)
                         else:
                             print("\nInvalid contact index")
                     except ValueError:
@@ -1107,7 +1154,8 @@ def search_contacts(sf):
                         contact_index = int(input("\nEnter the number of the contact to list tasks for: "))
                         if contact_index > 0 and contact_index <= contacts['totalSize']:
                             contact_id = contacts['records'][contact_index-1]['Id']
-                            tasks = get_tasks(sf, contact_id)
+                            opp_id = ""
+                            get_tasks(sf, contact_id, opp_id)
                         else:
                             print("\nInvalid contact index")
                     except ValueError:
