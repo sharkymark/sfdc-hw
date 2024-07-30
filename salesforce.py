@@ -894,6 +894,75 @@ def get_opp_details(opp):
     print(f"\nAccount Id: {opp['AccountId']}")
     print(f"Opportunity Id: {opp['Id']}")
 
+def create_task(sf, contact_id, account_id):
+
+    print("\nSubject picklist values:\n")
+    for i, option in enumerate(subject_options):
+        print(f"{i+1}. {option['value']}")
+    print(f"{len(subject_options)+1}. Other (enter a custom value)")
+
+    try:
+        subject_choice = int(input("\nEnter the number for the task type: "))
+
+        if subject_choice > 0 and subject_choice <= len(subject_options):
+            subject_value = subject_options[subject_choice - 1]['value']
+        elif subject_choice == len(subject_options) + 1:
+            subject_value = input("\nEnter a custom task type: ")
+        else:
+            subject_value = ''
+    except ValueError:
+        subject_value = ''
+
+    description = input("\nEnter the description of the task: ")
+
+    associate_with_account = input("\nAssociate with Account? (y/n): ")
+
+    if associate_with_account.lower() == 'y':
+        what_id = account_id
+    else:
+        what_id = ""
+
+    try:
+        sf.Task.create({
+            'Subject': subject_value,
+            'Description': description,
+            'Status': 'Completed',
+            'Priority': 'Normal',
+            'WhoId': contact_id,
+            'WhatId': what_id
+        })
+        print("\nTask record created successfully!\n")
+    except requests.exceptions.ConnectionError:
+        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        print(reconn)
+        sf.Task.create({
+            'Subject': subject,
+            'Description': description,
+            'Status': 'Completed',
+            'Priority': 'Normal',
+            'WhoId': contact_id,
+            'WhatId': what_id
+        })
+        print("\nTask record created successfully!\n")
+
+def print_contacts(query, contacts):
+
+    print("\nContacts:")
+    for i, contact in enumerate(contacts['records']):
+        print(f"{i+1}.")
+        print(f"Contact Id: {contact['Id']}")
+        print(f"Account: {contact['Account']['Name']}")
+        print(f"Account Id: {contact['AccountId']}")
+        print(f"First Name: {contact['FirstName']}")
+        print(f"Last Name: {contact['LastName']}")
+        print(f"Title: {contact['Title']}")
+        print(f"Lead Source: {contact['LeadSource']}")
+        print(f"Department: {contact['Department']}")
+        print(f"Email: {contact['Email']}")
+        print(f"Phone: {contact['Phone']}")
+        print(f"Mailing Address: {contact['MailingAddress']}")
+        print(f"Description: {contact['Description']}\n")
+
 def get_account_picklists(sf):
     account_fields = sf.Account.describe()
     picklists = {}
@@ -926,6 +995,15 @@ def get_opp_contact_role_picklists(sf):
             picklists[field['name']] = field['picklistValues']
     return picklists
 
+def get_task_picklists(sf):
+    task_fields = sf.Task.describe()
+    picklists = {}
+    for field in task_fields['fields']:
+        if field['type'] == 'picklist':
+            picklists[field['name']] = field['picklistValues']
+
+    return picklists
+
 def main():
 
     global username
@@ -938,6 +1016,7 @@ def main():
     global stage_options
     global opp_lead_source_options
     global opp_contact_role_options
+    global subject_options
 
     username = os.environ['SALESFORCE_USERNAME']
     password = os.environ['SALESFORCE_PASSWORD']
@@ -959,6 +1038,7 @@ def main():
     contact_picklists = get_contact_picklists(sf)
     opp_picklists = get_opp_picklists(sf)
     opp_contact_role_picklists = get_opp_contact_role_picklists(sf)
+    task_picklists = get_task_picklists(sf)
 
     # Access picklist values for a specific field
     lead_source_options = contact_picklists.get('LeadSource', [])
@@ -968,6 +1048,7 @@ def main():
     stage_options = opp_picklists.get('StageName', [])
     opp_lead_source_options = opp_picklists.get('LeadSource', [])
     opp_contact_role_options = opp_contact_role_picklists.get('Role', [])
+    subject_options = task_picklists.get('TaskSubtype', [])
 
     while True:
         try:
@@ -1025,7 +1106,14 @@ def main():
                     if field['picklistValues']:
                         print(f"{field['name']}:")
                         for value in field['picklistValues']:
-                            print(f"  {value['value']}")                              
+                            print(f"  {value['value']}") 
+                print("\nTask Picklists:\n")
+                task_picklists = sf.Task.describe()['fields']
+                for field in task_picklists:
+                    if field['picklistValues']:
+                        print(f"{field['name']}:")
+                        for value in field['picklistValues']:
+                            print(f"  {value['value']}") 
 
             elif action.lower() == 'co':
 
@@ -1358,34 +1446,18 @@ def main():
                         sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
                         print(reconn)
                         contacts = sf.query(query)
-
-                    print(f"Contact query: ", query)
-
-
+                        print(f"Contact query: ", query)
+                    
                     if contacts['totalSize'] > 0:
-                        print("\nContacts:")
-                        for i, contact in enumerate(contacts['records']):
-                            print(f"{i+1}.")
-                            print(f"Contact Id: {contact['Id']}")
-                            print(f"Account: {contact['Account']['Name']}")
-                            print(f"Account Id: {contact['AccountId']}")
-                            print(f"First Name: {contact['FirstName']}")
-                            print(f"Last Name: {contact['LastName']}")
-                            print(f"Title: {contact['Title']}")
-                            print(f"Lead Source: {contact['LeadSource']}")
-                            print(f"Department: {contact['Department']}")
-                            print(f"Email: {contact['Email']}")
-                            print(f"Phone: {contact['Phone']}")
-                            print(f"Mailing Address: {contact['MailingAddress']}")
-                            print(f"Description: {contact['Description']}\n")
-
-
+                    
                         while True:
+                            print_contacts(query, contacts)
 
                             print("\nOptions:")
                             print("1. Update a specific contact by number in the list")
                             print("2. Re-enter search criteria")
-                            print("3. Exit to main menu\n")
+                            print("3. Create an activity for a specific contact in the list")
+                            print("4. Exit to main menu\n")
                         
                             try:
                                 option = int(input("Enter your option: "))
@@ -1398,6 +1470,7 @@ def main():
                                     contact_index = int(input("\nEnter the number of the contact to update: "))
                                     if contact_index > 0 and contact_index <= contacts['totalSize']:
                                         contact_id = contacts['records'][contact_index-1]['Id']
+                                        account_id = contacts['records'][contact_index-1]['AccountId']
                                         update_contact(sf, contact_id)
                                         break
                                     else:
@@ -1408,6 +1481,17 @@ def main():
                             elif option == 2:
                                 break
                             elif option == 3:
+                                try:
+                                    contact_index = int(input("\nEnter the number of the contact to create an activity for: "))
+                                    if contact_index > 0 and contact_index <= contacts['totalSize']:
+                                        contact_id = contacts['records'][contact_index-1]['Id']
+                                        account_id = contacts['records'][contact_index-1]['AccountId']
+                                        create_task(sf, contact_id, account_id)
+                                    else:
+                                        print("\nInvalid contact index")
+                                except ValueError:
+                                    print("\nInvalid entry. Please enter a valid number.")
+                            elif option == 4:
                                 exit_sc = True
                                 break
                             else:
@@ -1447,7 +1531,11 @@ def main():
                 print("\nDescribe the opportunity contact role object:\n")
                 cr_fields = sf.OpportunityContactRole.describe()
                 for field in cr_fields['fields']:
-                    print(field['name'])                                        
+                    print(field['name'])
+                print("\nDescribe the Task object:\n")
+                cr_fields = sf.Task.describe()
+                for field in cr_fields['fields']:
+                    print(field['name'])
 
             elif action.lower() == 'p':
                 change_settings()
