@@ -1337,63 +1337,83 @@ def main():
                         print("No accounts found")                     
                     
             elif action.lower() == 'sc':
-                search_term = input("\nEnter a search term (first name, last name, email, or title): ")
 
-                try:
-                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' ORDER BY LastName")
-                except requests.exceptions.ConnectionError:
-                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                    print(reconn)
-                    contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' ORDER BY LastName")
+                while True:
 
-                if contacts['totalSize'] > 0:
-                    print("\nContacts:")
-                    for i, contact in enumerate(contacts['records']):
-                        print(f"{i+1}.")
-                        print(f"Id: {contact['Id']}")
-                        print(f"First Name: {contact['FirstName']}")
-                        print(f"Last Name: {contact['LastName']}")
-                        print(f"Title: {contact['Title']}")
-                        print(f"Lead Source: {contact['LeadSource']}")
-                        print(f"Department: {contact['Department']}")
-                        print(f"Email: {contact['Email']}")
-                        print(f"Phone: {contact['Phone']}")
-                        print(f"Mailing Address: {contact['MailingAddress']}")
-                        print(f"Description: {contact['Description']}\n")
+                    search_term = input("\nEnter a search term (account name, first name, last name, email, or title) or 'quit' to exit: ")
 
-                    while True:
+                    if search_term.lower() == 'quit':
+                        break
 
-                        print("\nOptions:")
-                        print("1. Update a specific contact by number in the list")
-                        print("2. Cancel\n")
-                    
-                        try:
-                            option = int(input("Enter your option: "))
-                        except ValueError:
-                            print("\nInvalid entry. Please enter a valid number.")
-                            continue
+                    query = f"""
+                    SELECT Contact.Id, Account.Name, Contact.AccountId, Contact.FirstName, Contact.LastName, Contact.Title, Contact.Department, Contact.Email, Contact.Phone, Contact.MailingAddress, Contact.Description, Contact.LeadSource FROM Contact 
+                    WHERE (FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' OR Account.Name LIKE '%{search_term}%')
+                    AND Contact.AccountId != NULL
+                    ORDER BY LastName
+                    """
 
-                        if option == 1:
+                    try:
+                        contacts = sf.query(query)
+                    except requests.exceptions.ConnectionError:
+                        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                        print(reconn)
+                        contacts = sf.query(query)
+
+                    print(f"Contact query: ", query)
+
+
+                    if contacts['totalSize'] > 0:
+                        print("\nContacts:")
+                        for i, contact in enumerate(contacts['records']):
+                            print(f"{i+1}.")
+                            print(f"Contact Id: {contact['Id']}")
+                            print(f"Account: {contact['Account']['Name']}")
+                            print(f"Account Id: {contact['AccountId']}")
+                            print(f"First Name: {contact['FirstName']}")
+                            print(f"Last Name: {contact['LastName']}")
+                            print(f"Title: {contact['Title']}")
+                            print(f"Lead Source: {contact['LeadSource']}")
+                            print(f"Department: {contact['Department']}")
+                            print(f"Email: {contact['Email']}")
+                            print(f"Phone: {contact['Phone']}")
+                            print(f"Mailing Address: {contact['MailingAddress']}")
+                            print(f"Description: {contact['Description']}\n")
+
+                        while True:
+
+                            print("\nOptions:")
+                            print("1. Update a specific contact by number in the list")
+                            print("2. Re-enter search criteria")
+                            print("3. Exit to main menu\n")
+                        
                             try:
-                                contact_index = int(input("\nEnter the number of the contact to update: "))
-                                if contact_index > 0 and contact_index <= contacts['totalSize']:
-                                    contact_id = contacts['records'][contact_index-1]['Id']
-                                    update_contact(sf, contact_id)
-                                    break
-                                else:
-                                    print("\nInvalid contact index")
+                                option = int(input("Enter your option: "))
                             except ValueError:
                                 print("\nInvalid entry. Please enter a valid number.")
+                                continue
 
-                        elif option == 2:
-                            print("\nUpdate cancelled")
-                            break
-                        else:
-                            print("\nInvalid contact index")                    
-                            continue   
+                            if option == 1:
+                                try:
+                                    contact_index = int(input("\nEnter the number of the contact to update: "))
+                                    if contact_index > 0 and contact_index <= contacts['totalSize']:
+                                        contact_id = contacts['records'][contact_index-1]['Id']
+                                        update_contact(sf, contact_id)
+                                        break
+                                    else:
+                                        print("\nInvalid contact index")
+                                except ValueError:
+                                    print("\nInvalid entry. Please enter a valid number.")
 
-                else:
-                    print("No contacts found")
+                            elif option == 2:
+                                break
+                            elif option == 3:
+                                return
+                            else:
+                                print("\nInvalid contact index")                    
+                                continue   
+
+                    else:
+                        print("No contacts found")
 
             elif action.lower() == 'da':
                 account_name = input("\nEnter a partial account name to lookup accounts to delete: ")
