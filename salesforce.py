@@ -1,6 +1,7 @@
 import simple_salesforce
 import os
 import datetime
+from datetime import datetime
 import calendar
 import requests
 
@@ -947,7 +948,7 @@ def create_task(sf, contact_id, account_id):
 
 def print_contacts(query, contacts):
 
-    print("\nContacts:")
+    print("\nFiltered contacts:\n")
     for i, contact in enumerate(contacts['records']):
         print(f"{i+1}.")
         print(f"Contact Id: {contact['Id']}")
@@ -962,6 +963,135 @@ def print_contacts(query, contacts):
         print(f"Phone: {contact['Phone']}")
         print(f"Mailing Address: {contact['MailingAddress']}")
         print(f"Description: {contact['Description']}\n")
+
+def format_datetime(dt_str):
+    dt = datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S.%f%z")
+    return dt.strftime("%Y-%m-%d %I:%M %p")
+
+def get_tasks(sf, contact_id):
+
+    query = f"SELECT Id, Subject, Description, Status, Priority, CreatedDate, CreatedById, Who.FirstName, Who.LastName, Account.Name, CreatedBy.Name FROM Task WHERE WhoId = '{contact_id}' ORDER BY CreatedDate DESC"
+
+    print("\nTasks query: ", query)
+
+    print("\nTasks:\n")
+
+    try:
+        tasks = sf.query(query)
+    except requests.exceptions.ConnectionError:
+        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        print(reconn)
+        tasks = sf.query(query)
+
+    if tasks['totalSize'] > 0:
+
+        # Print results
+        for i, task in enumerate(tasks['records']):
+            print(f"\n{i+1}.")
+            print(f"{format_datetime(task['CreatedDate'])}")
+            print(f"From: {task['CreatedBy']['Name']}")
+            print(f"To: {task['Who']['FirstName']} {task['Who']['LastName']}")
+            print(f"Subject: ", task['Subject'])
+            print(f"Description: ", task['Description'])
+            print(f"Status: ", task['Status'])
+            print(f"Priority: ", task['Priority'])
+
+        return tasks
+
+    else:
+        print("No tasks found")
+
+def search_contacts(sf):
+
+    exit_sc = False
+    while not exit_sc:
+
+        search_term = input("\nEnter a search term (account name, first name, last name, email, or title) or 'quit' to exit: ")
+
+        if search_term.lower() == 'quit':
+            break
+
+        query = f"""
+        SELECT Contact.Id, Account.Name, Contact.AccountId, Contact.FirstName, Contact.LastName, Contact.Title, Contact.Department, Contact.Email, Contact.Phone, Contact.MailingAddress, Contact.Description, Contact.LeadSource FROM Contact 
+        WHERE (FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' OR Account.Name LIKE '%{search_term}%')
+        AND Contact.AccountId != NULL
+        ORDER BY LastName
+        """
+
+        try:
+            contacts = sf.query(query)
+        except requests.exceptions.ConnectionError:
+            sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+            print(reconn)
+            contacts = sf.query(query)
+            print(f"Contact query: ", query)
+        
+        if contacts['totalSize'] > 0:
+        
+            print_contacts(query, contacts)
+
+            while True:
+                
+
+                print("\nOptions:")
+                print("1. Update a specific contact by number in the list")
+                print("2. Re-enter search criteria")
+                print("3. Create a task for a specific contact in the list")
+                print("4. List tasks for a specific contact in the list")
+                print("5. Exit to main menu\n")
+            
+                try:
+                    option = int(input("Enter your option: "))
+                except ValueError:
+                    print("\nInvalid entry. Please enter a valid number.")
+                    continue
+
+                if option == 1:
+                    try:
+                        contact_index = int(input("\nEnter the number of the contact to update: "))
+                        if contact_index > 0 and contact_index <= contacts['totalSize']:
+                            contact_id = contacts['records'][contact_index-1]['Id']
+                            account_id = contacts['records'][contact_index-1]['AccountId']
+                            update_contact(sf, contact_id)
+                            break
+                        else:
+                            print("\nInvalid contact index")
+                    except ValueError:
+                        print("\nInvalid entry. Please enter a valid number.")
+
+                elif option == 2:
+                    break
+                elif option == 3:
+                    try:
+                        contact_index = int(input("\nEnter the number of the contact to create an activity for: "))
+                        if contact_index > 0 and contact_index <= contacts['totalSize']:
+                            contact_id = contacts['records'][contact_index-1]['Id']
+                            account_id = contacts['records'][contact_index-1]['AccountId']
+                            create_task(sf, contact_id, account_id)
+                        else:
+                            print("\nInvalid contact index")
+                    except ValueError:
+                        print("\nInvalid entry. Please enter a valid number.")
+                elif option == 4:
+                    try:
+                        contact_index = int(input("\nEnter the number of the contact to list tasks for: "))
+                        if contact_index > 0 and contact_index <= contacts['totalSize']:
+                            contact_id = contacts['records'][contact_index-1]['Id']
+                            tasks = get_tasks(sf, contact_id)
+                        else:
+                            print("\nInvalid contact index")
+                    except ValueError:
+                        print("\nInvalid entry. Please enter a valid number.")
+                elif option == 5:
+                    exit_sc = True
+                    break
+                else:
+                    print("\nInvalid contact index")                    
+                    continue   
+
+        else:
+            print("No contacts found")
+
 
 def get_account_picklists(sf):
     account_fields = sf.Account.describe()
@@ -1425,81 +1555,8 @@ def main():
                         print("No accounts found")                     
                     
             elif action.lower() == 'sc':
-                exit_sc = False
-                while not exit_sc:
 
-                    search_term = input("\nEnter a search term (account name, first name, last name, email, or title) or 'quit' to exit: ")
-
-                    if search_term.lower() == 'quit':
-                        break
-
-                    query = f"""
-                    SELECT Contact.Id, Account.Name, Contact.AccountId, Contact.FirstName, Contact.LastName, Contact.Title, Contact.Department, Contact.Email, Contact.Phone, Contact.MailingAddress, Contact.Description, Contact.LeadSource FROM Contact 
-                    WHERE (FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' OR Account.Name LIKE '%{search_term}%')
-                    AND Contact.AccountId != NULL
-                    ORDER BY LastName
-                    """
-
-                    try:
-                        contacts = sf.query(query)
-                    except requests.exceptions.ConnectionError:
-                        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                        print(reconn)
-                        contacts = sf.query(query)
-                        print(f"Contact query: ", query)
-                    
-                    if contacts['totalSize'] > 0:
-                    
-                        while True:
-                            print_contacts(query, contacts)
-
-                            print("\nOptions:")
-                            print("1. Update a specific contact by number in the list")
-                            print("2. Re-enter search criteria")
-                            print("3. Create an activity for a specific contact in the list")
-                            print("4. Exit to main menu\n")
-                        
-                            try:
-                                option = int(input("Enter your option: "))
-                            except ValueError:
-                                print("\nInvalid entry. Please enter a valid number.")
-                                continue
-
-                            if option == 1:
-                                try:
-                                    contact_index = int(input("\nEnter the number of the contact to update: "))
-                                    if contact_index > 0 and contact_index <= contacts['totalSize']:
-                                        contact_id = contacts['records'][contact_index-1]['Id']
-                                        account_id = contacts['records'][contact_index-1]['AccountId']
-                                        update_contact(sf, contact_id)
-                                        break
-                                    else:
-                                        print("\nInvalid contact index")
-                                except ValueError:
-                                    print("\nInvalid entry. Please enter a valid number.")
-
-                            elif option == 2:
-                                break
-                            elif option == 3:
-                                try:
-                                    contact_index = int(input("\nEnter the number of the contact to create an activity for: "))
-                                    if contact_index > 0 and contact_index <= contacts['totalSize']:
-                                        contact_id = contacts['records'][contact_index-1]['Id']
-                                        account_id = contacts['records'][contact_index-1]['AccountId']
-                                        create_task(sf, contact_id, account_id)
-                                    else:
-                                        print("\nInvalid contact index")
-                                except ValueError:
-                                    print("\nInvalid entry. Please enter a valid number.")
-                            elif option == 4:
-                                exit_sc = True
-                                break
-                            else:
-                                print("\nInvalid contact index")                    
-                                continue   
-
-                    else:
-                        print("No contacts found")
+                search_contacts(sf)
 
             elif action.lower() == 'da':
                 account_name = input("\nEnter a partial account name to lookup accounts to delete: ")
