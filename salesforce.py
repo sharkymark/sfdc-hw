@@ -1337,8 +1337,8 @@ def main():
                         print("No accounts found")                     
                     
             elif action.lower() == 'sc':
-
-                while True:
+                exit_sc = False
+                while not exit_sc:
 
                     search_term = input("\nEnter a search term (account name, first name, last name, email, or title) or 'quit' to exit: ")
 
@@ -1379,6 +1379,7 @@ def main():
                             print(f"Mailing Address: {contact['MailingAddress']}")
                             print(f"Description: {contact['Description']}\n")
 
+
                         while True:
 
                             print("\nOptions:")
@@ -1407,7 +1408,8 @@ def main():
                             elif option == 2:
                                 break
                             elif option == 3:
-                                return
+                                exit_sc = True
+                                break
                             else:
                                 print("\nInvalid contact index")                    
                                 continue   
