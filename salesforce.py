@@ -311,7 +311,7 @@ def get_contacts_for_account(sf, account_id):
 
                 elif option == 3:
                     try:
-                        contact_index = int(input("\nEnter the number of the contact to create an activity for: "))
+                        contact_index = int(input("\nEnter the number of the contact to create a task for: "))
                         if contact_index > 0 and contact_index <= contacts['totalSize']:
                             contact_id = contacts['records'][contact_index-1]['Id']
                             account_id = contacts['records'][contact_index-1]['AccountId']
@@ -328,7 +328,8 @@ def get_contacts_for_account(sf, account_id):
                         if contact_index > 0 and contact_index <= contacts['totalSize']:
                             contact_id = contacts['records'][contact_index-1]['Id']
                             opp_id = ""
-                            get_tasks(sf, contact_id, opp_id)
+                            account_id = contacts['records'][contact_index-1]['AccountId']
+                            get_tasks(sf, contact_id, account_id, opp_id)
                             exit_loop = False
                         else:
                             print("\nInvalid contact index")
@@ -933,7 +934,7 @@ def search_opportunities(sf):
                         opp_id = opps['records'][opp_index-1]['Id']
                         account_id = ""
                         contact_id = ""
-                        get_tasks(sf, contact_id, opp_id)
+                        get_tasks(sf, contact_id, account_id, opp_id)
                         break
                     else:
                         print("\nInvalid opp index")
@@ -1044,12 +1045,14 @@ def format_datetime(dt_str):
     dt = datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S.%f%z")
     return dt.strftime("%Y-%m-%d %I:%M %p")
 
-def get_tasks(sf, contact_id, opp_id):
+def get_tasks(sf, contact_id, account_id, opp_id):
 
     if contact_id:
         who_what_query = f", Who.FirstName, Who.LastName, WhoId FROM Task WHERE WhoId = '{contact_id}'"
     elif opp_id:
         who_what_query = f", WhatId FROM Task WHERE WhatId = '{opp_id}'"
+    elif account_id:
+        who_what_query = f", WhatId FROM Task WHERE WhatId = '{account_id}'"
      
     query = f"SELECT Id, Subject, Description, Status, Priority, CreatedDate, CreatedById, Account.Name, CreatedBy.Name{who_what_query} ORDER BY CreatedDate DESC"
 
@@ -1143,7 +1146,7 @@ def search_contacts(sf):
                     break
                 elif option == 3:
                     try:
-                        contact_index = int(input("\nEnter the number of the contact to create an activity for: "))
+                        contact_index = int(input("\nEnter the number of the contact to create a task for: "))
                         if contact_index > 0 and contact_index <= contacts['totalSize']:
                             contact_id = contacts['records'][contact_index-1]['Id']
                             account_id = contacts['records'][contact_index-1]['AccountId']
@@ -1158,8 +1161,9 @@ def search_contacts(sf):
                         contact_index = int(input("\nEnter the number of the contact to list tasks for: "))
                         if contact_index > 0 and contact_index <= contacts['totalSize']:
                             contact_id = contacts['records'][contact_index-1]['Id']
+                            account_id = ""
                             opp_id = ""
-                            get_tasks(sf, contact_id, opp_id)
+                            get_tasks(sf, contact_id, account_id, opp_id)
                         else:
                             print("\nInvalid contact index")
                     except ValueError:
@@ -1606,7 +1610,9 @@ def main():
                             print("\nOptions:")
                             print("1. Update a specific account by number in the list")
                             print("2. Retrieve account details and contacts by a specific account in the list")
-                            print("3. Cancel and return to main menu\n")
+                            print("3. Create a task for a specific account in the list")
+                            print("4. List tasks for a specific account in the list")
+                            print("5. Cancel and return to main menu\n")
                         
                             try:
                                 option = int(input("Enter your option: "))
@@ -1615,21 +1621,53 @@ def main():
                                 continue
                         
                             if option == 1:
-                                account_index = int(input("\nEnter the number of the account to update: "))
-                                if account_index > 0 and account_index <= accounts['totalSize']:
-                                    account_id = accounts['records'][account_index-1]['Id']
-                                    update_account(sf, account_id)
+                                try:
+                                    account_index = int(input("\nEnter the number of the account to update: "))
+                                    if account_index > 0 and account_index <= accounts['totalSize']:
+                                        account_id = accounts['records'][account_index-1]['Id']
+                                        update_account(sf, account_id)
+                                    else:
+                                        print("\nInvalid account index")
+                                except ValueError:
+                                    print("\nInvalid entry. Please enter a valid number.")
                             elif option == 2:
-                                account_index = int(input("\nEnter the number of the account to retrieve contacts: "))
-                                if account_index > 0 and account_index <= accounts['totalSize']:
-                                    account_id = accounts['records'][account_index-1]['Id']
-                                    result = get_contacts_for_account(sf, account_id)
-                                    if result == 'main_menu':
-                                        break
-                                else:
-                                    print("\nInvalid account index")
+                                try:
+                                    account_index = int(input("\nEnter the number of the account to retrieve contacts: "))
+                                    if account_index > 0 and account_index <= accounts['totalSize']:
+                                        account_id = accounts['records'][account_index-1]['Id']
+                                        result = get_contacts_for_account(sf, account_id)
+                                        if result == 'main_menu':
+                                            break
+                                    else:
+                                        print("\nInvalid account index")
+                                except ValueError:
+                                    print("\nInvalid entry. Please enter a valid number.")
                             elif option == 3:
-                                print("\nUpdate or Retrieve Contacts cancelled")
+                                try:
+                                    account_index = int(input("\nEnter the number of the account to create a task for: "))
+                                    if account_index > 0 and account_index <= accounts['totalSize']:
+                                        contact_id = ""
+                                        account_id = accounts['records'][account_index-1]['Id']
+                                        opp_id = ""
+                                        create_task(sf, contact_id, account_id, opp_id)
+                                    else:
+                                        print("\nInvalid account index")
+                                except ValueError:
+                                    print("\nInvalid entry. Please enter a valid number.")
+                            elif option == 4:
+                                try:
+                                    account_index = int(input("\nEnter the number of the account to list tasks for: "))
+                                    if account_index > 0 and account_index <= accounts['totalSize']:
+                                        contact_id = ""
+                                        account_id = accounts['records'][account_index-1]['Id']
+                                        opp_id = ""
+                                        get_tasks(sf, contact_id, account_id, opp_id)
+                                    else:
+                                        print("\nInvalid account index")
+                                except ValueError:
+                                    print("\nInvalid entry. Please enter a valid number.")
+                            elif option == 5:
+                                print("\nReturning to main menu")
                                 break
                             else:
                                 print("\nInvalid account index")
