@@ -274,7 +274,8 @@ def get_contacts_for_account(sf, account_id):
                     contact.get(column) for column in preferences['contact_additional_columns'].split(', ') if column.strip() != ''
                 ])
 
-            
+            exit_loop = False
+
             while True:
 
                 print("\nOptions:")
@@ -335,6 +336,7 @@ def get_contacts_for_account(sf, account_id):
                         print("\nInvalid entry. Please enter a valid number.")
                 elif option == 5:
                     exit_loop = True
+                    return 'main_menu'
 
                 if exit_loop:
                     exit_loop = False  # Reset exit_loop to False
@@ -1621,7 +1623,9 @@ def main():
                                 account_index = int(input("\nEnter the number of the account to retrieve contacts: "))
                                 if account_index > 0 and account_index <= accounts['totalSize']:
                                     account_id = accounts['records'][account_index-1]['Id']
-                                    get_contacts_for_account(sf, account_id)
+                                    result = get_contacts_for_account(sf, account_id)
+                                    if result == 'main_menu':
+                                        break
                                 else:
                                     print("\nInvalid account index")
                             elif option == 3:
