@@ -1178,6 +1178,53 @@ def search_contacts(sf):
         else:
             print("No contacts found")
 
+def create_contact(sf, account_id):
+
+    first_name = input("Enter contact first name: ")
+    last_name = input("Enter contact last name: ")
+    email = input("Enter contact email: ")
+    phone = input("Enter contact phone: ")
+    title = input("Enter contact title: ")
+    description = input("Enter contact description: ")
+    print("Lead Source picklist values:")
+    for i, option in enumerate(lead_source_options):
+        print(f"{i+1}. {option['value']}")
+
+    try:
+        lead_source_choice = int(input("Enter the number for the Lead Source: "))
+
+        if lead_source_choice > 0 and lead_source_choice <= len(lead_source_options):
+            lead_source_value = lead_source_options[lead_source_choice - 1]['value']
+        else:
+            lead_source_value = ''
+    except ValueError:
+        lead_source_value = ''
+
+    department = input("Enter contact department: ")
+    address = input("Enter contact mailing address: ")
+    city = input("Enter contact city: ")
+    state = input("Enter contact state: ")
+    postalcode = input("Enter contact zip code: ")
+    country = input("Enter contact country: ")
+    contact = sf.Contact.create({
+        'AccountId': account_id,
+        'FirstName': first_name,
+        'LastName': last_name,
+        'Email': email,
+        'Description': description,
+        'LeadSource': lead_source_value,
+        'Phone': phone,
+        'Title': title,
+        'Department': department,
+        'MailingStreet': address,
+        'MailingCity': city,
+        'MailingState': state,
+        'MailingPostalcode': postalcode,
+        'MailingCountry': country   
+    })
+    contact_id = contact.get('id')  # Get the account ID from the response
+    print(f"\nCreated contact {contact_id}\n")
+
 
 def get_account_picklists(sf):
     account_fields = sf.Account.describe()
@@ -1506,52 +1553,8 @@ def main():
                         continue
 
                 if 'account_id' in locals():
-                    # rest of the code remains the same
+                    create_contact(sf, account_id)
 
-                    first_name = input("Enter contact first name: ")
-                    last_name = input("Enter contact last name: ")
-                    email = input("Enter contact email: ")
-                    phone = input("Enter contact phone: ")
-                    title = input("Enter contact title: ")
-                    description = input("Enter contact description: ")
-                    print("Lead Source picklist values:")
-                    for i, option in enumerate(lead_source_options):
-                        print(f"{i+1}. {option['value']}")
-
-                    try:
-                        lead_source_choice = int(input("Enter the number for the Lead Source: "))
-
-                        if lead_source_choice > 0 and lead_source_choice <= len(lead_source_options):
-                            lead_source_value = lead_source_options[lead_source_choice - 1]['value']
-                        else:
-                            lead_source_value = ''
-                    except ValueError:
-                        lead_source_value = ''
-
-                    department = input("Enter contact department: ")
-                    address = input("Enter contact mailing address: ")
-                    city = input("Enter contact city: ")
-                    state = input("Enter contact state: ")
-                    postalcode = input("Enter contact zip code: ")
-                    country = input("Enter contact country: ")
-                    contact = sf.Contact.create({
-                        'AccountId': account_id,
-                        'FirstName': first_name,
-                        'LastName': last_name,
-                        'Email': email,
-                        'Description': description,
-                        'LeadSource': lead_source_value,
-                        'Phone': phone,
-                        'Title': title,
-                        'Department': department,
-                        'MailingStreet': address,
-                        'MailingCity': city,
-                        'MailingState': state,
-                        'MailingPostalcode': postalcode,
-                        'MailingCountry': country   
-                    })
-                    contact_id = contact.get('id')  # Get the account ID from the response
-                    print(f"\nCreated contact {contact_id}\n")
 
             elif action.lower() == 'so':
 
@@ -1612,7 +1615,8 @@ def main():
                             print("2. Retrieve account details and contacts by a specific account in the list")
                             print("3. Create a task for a specific account in the list")
                             print("4. List tasks for a specific account in the list")
-                            print("5. Cancel and return to main menu\n")
+                            print("5. Create a contact for a specific account in the list")
+                            print("6. Cancel and return to main menu\n")
                         
                             try:
                                 option = int(input("Enter your option: "))
@@ -1667,6 +1671,16 @@ def main():
                                 except ValueError:
                                     print("\nInvalid entry. Please enter a valid number.")
                             elif option == 5:
+                                try:
+                                    account_index = int(input("\nEnter the number of the account to create a contact for: "))
+                                    if account_index > 0 and account_index <= accounts['totalSize']:
+                                        account_id = accounts['records'][account_index-1]['Id']
+                                        create_contact(sf, account_id)
+                                    else:
+                                        print("\nInvalid account index")
+                                except ValueError:
+                                    print("\nInvalid entry. Please enter a valid number.")
+                            elif option == 6:
                                 print("\nReturning to main menu")
                                 break
                             else:

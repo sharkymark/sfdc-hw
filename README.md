@@ -36,14 +36,16 @@ Alternatively, see the dev container approach below which autostarts the app.
 ## The app 
 
 The app runs as a while loop prompting the user for actions like:
-1. creating & updating accounts, contacts, opportunities and opportunity contact roles
-1. describing the account and contact object schemas
-1. searching Salesforce Account records by the Name column with an option to retrieve contacts
+1. creating & updating accounts, contacts, opportunities, opportunity contact roles and tasks
+1. describing the account, contact, opportunity, and contact role object schemas
+1. searching Salesforce cccount records by the Name column with an option to retrieve contacts
 1. deleting accounts, contacts and opportunity contact roles
 1. searching contacts by name, title, email with an option to update them
-1. show picklists values for account and contact objects
-1. allow picklist support for: lead source (contact), type (account), and industry (account)
+1. show picklists values for account, contact, opportunity and contact role objects
+1. allow picklist support for: lead source (contact), type (account), industry (account), Subject (task)
 1. a global settings for additional account and contact columns to retrieve.
+
+> Currently am not providing delete functionality for opportunities (revenue) by design.
 
 ## Dev Container
 
