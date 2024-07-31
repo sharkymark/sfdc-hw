@@ -314,6 +314,7 @@ def get_contacts_for_account(sf, account_id):
                         if contact_index > 0 and contact_index <= contacts['totalSize']:
                             contact_id = contacts['records'][contact_index-1]['Id']
                             account_id = contacts['records'][contact_index-1]['AccountId']
+                            opp_id = ""
                             create_task(sf, contact_id, account_id, opp_id)
                             exit_loop = True
                         else:
@@ -1144,6 +1145,7 @@ def search_contacts(sf):
                         if contact_index > 0 and contact_index <= contacts['totalSize']:
                             contact_id = contacts['records'][contact_index-1]['Id']
                             account_id = contacts['records'][contact_index-1]['AccountId']
+                            opp_id = ""
                             create_task(sf, contact_id, account_id, opp_id)
                         else:
                             print("\nInvalid contact index")
