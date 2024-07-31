@@ -316,7 +316,7 @@ def get_contacts_for_account(sf, account_id):
                             account_id = contacts['records'][contact_index-1]['AccountId']
                             opp_id = ""
                             create_task(sf, contact_id, account_id, opp_id)
-                            exit_loop = True
+                            exit_loop = False
                         else:
                             print("\nInvalid contact index")
                     except ValueError:
@@ -328,7 +328,7 @@ def get_contacts_for_account(sf, account_id):
                             contact_id = contacts['records'][contact_index-1]['Id']
                             opp_id = ""
                             get_tasks(sf, contact_id, opp_id)
-                            exit_loop = True
+                            exit_loop = False
                         else:
                             print("\nInvalid contact index")
                     except ValueError:
