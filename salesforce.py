@@ -639,7 +639,7 @@ def update_opportunity(sf, opp):
             break  # Exit the loop if empty
 
         try:
-            datetime.datetime.strptime(new_close_date, '%Y-%m-%d')
+            datetime.strptime(new_close_date, '%Y-%m-%d')
             break  # Valid date, exit the loop
         except ValueError:
             print("Invalid close date format. Please enter in YYYY-MM-DD format.")
@@ -795,7 +795,7 @@ def get_opportunities(sf, opp_name, stagename, sort, datefilter):
         try:
             option = int(input("Enter your option: "))
         except ValueError:
-            print("\nInvalid entry. All")
+            print("\nInvalid entry. Will not filter by date.")
             option = 5
 
         datefilter = build_filter_clause(option)
