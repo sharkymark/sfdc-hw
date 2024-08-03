@@ -4,6 +4,7 @@ import datetime
 from datetime import datetime
 import calendar
 import requests
+import sys, logging
 
 def set_default_settings():
     global preferences
@@ -11,7 +12,8 @@ def set_default_settings():
         'account_additional_columns': '',
         'show_contacts': True,
         'contact_additional_columns': '',
-        'max_delete_records': 10
+        'max_delete_records': 10,
+        'debug_mode': False
     }
 
 def change_settings():
@@ -23,7 +25,13 @@ def change_settings():
         preferences['contact_additional_columns'] = input("\nEnter additional column names comma-separated for contacts besides Id, FirstName, LastName, Email, Title, Phone, Description:\ne.g., MobilePhone, CreatedDate, LastModifiedDate, LeadSource ")
     else:
         preferences['contact_additional_columns'] = ""
-    preferences['max_delete_records'] = int(input("\nEnter the maximum number of records to delete at one time (e.g., 10): ")) 
+    try:
+        preferences['max_delete_records'] = int(input("\nEnter the maximum number of records to delete at one time (e.g., 10): "))
+    except ValueError:
+        preferences['max_delete_records'] = 10
+    preferences['debug_mode'] = input("\nEnable debug mode? (yes/no): ").lower() == 'yes'
+
+    check_debug_mode()
 
 def validate_date(date_string):
   """Validates a date string in the format YYYY-MM-DD.
@@ -1267,6 +1275,15 @@ def get_task_picklists(sf):
 
     return picklists
 
+def check_debug_mode():
+    if preferences['debug_mode']:
+        print("\nDebug mode is enabled\n")
+        logging.basicConfig(level=logging.DEBUG)
+        logging.getLogger('simple_salesforce').setLevel(logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
+    else:
+        print("\nDebug mode is disabled\n")
+
 def main():
 
     global username
@@ -1287,11 +1304,12 @@ def main():
     firstconn = "\nConnected to Salesforce - first time\n"
     reconn = "\nReconnected to Salesforce\n"
 
-
     exit_loop = False
 
     # Set default settings when the program starts
     set_default_settings()
+
+    check_debug_mode()
 
     # Create a Salesforce connection
     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
