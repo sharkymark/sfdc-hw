@@ -266,7 +266,12 @@ def get_contacts_for_account(sf, account_id):
             contact_query += ", " + preferences['contact_additional_columns']
         contact_query += f" FROM Contact WHERE AccountId = '{account_id}' ORDER BY LastName"
 
-        contacts = sf.query(contact_query)
+        try:
+            contacts = sf.query(contact_query)
+        except requests.exceptions.ConnectionError:
+            sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+            print(reconn)
+            contacts = sf.query(contact_query)
         print("\nContacts query: ", contact_query)
         print("\nContacts:\n")
 
@@ -358,7 +363,13 @@ def get_contactdetails(sf, contact_id):
 
     # Fetch contact information
     contact_query = f"SELECT Id, AccountId, FirstName, LastName, Title, Email FROM Contact WHERE Id = '{contact_id}' ORDER BY LastName"
-    contact_result = sf.query(contact_query)
+    
+    try:
+        contact_result = sf.query(contact_query)
+    except requests.exceptions.ConnectionError:
+        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        print(reconn)
+        contact_result = sf.query(contact_query)
 
     if contact_result['totalSize'] > 0:
         return contact_result['records'][0]
@@ -369,7 +380,13 @@ def get_accountdetails(sf, account_id):
 
     # Fetch account information
     account_query = f"SELECT Id, Name, Type, Industry, Description, Website FROM Account WHERE Id = '{account_id}' ORDER BY Name"
-    account_result = sf.query(account_query)
+
+    try:
+        account_result = sf.query(account_query)
+    except requests.exceptions.ConnectionError:
+        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        print(reconn)
+        account_result = sf.query(account_query)
 
     if account_result['totalSize'] > 0:
         return account_result['records'][0]
@@ -379,13 +396,13 @@ def get_accountdetails(sf, account_id):
 def get_contacts(sf):
 
     search_term = input("\nEnter a search term (first name, last name, email, or title): ")
-
+    query = "SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' ORDER BY LastName"
     try:
-        contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' ORDER BY LastName")
+        contacts = sf.query(query)
     except requests.exceptions.ConnectionError:
         sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
         print(reconn)
-        contacts = sf.query(f"SELECT Id, FirstName, LastName, Title, Department, Email, Phone, MailingAddress, Description, LeadSource FROM Contact WHERE FirstName LIKE '%{search_term}%' OR LastName LIKE '%{search_term}%' OR Email LIKE '%{search_term}%' OR Title LIKE '%{search_term}%' ORDER BY LastName")
+        contacts = sf.query(query)
 
     if contacts['totalSize'] > 0:
         print("\nContacts:")
@@ -1399,13 +1416,13 @@ def main():
             elif action.lower() == 'co':
 
                 account_name = input("\nAn account must already exist to create an opportunity. Enter account name to lookup id: ")
-
+                query = f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name"
                 try:
-                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name")
+                    account_results = sf.query(query)
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
                     print(reconn)
-                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name")
+                    account_results = sf.query(query)
 
 
                 if account_results['totalSize'] == 0:
@@ -1546,12 +1563,13 @@ def main():
 
                 account_name = input("\nAn account must already exist to create a contact. Enter account name to lookup id: ")
 
+                query = f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name"
                 try:
-                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name")
+                    account_results = sf.query(query)
                 except requests.exceptions.ConnectionError:
                     sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
                     print(reconn)
-                    account_results = sf.query(f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name")
+                    account_results = sf.query(query)
 
 
                 if account_results['totalSize'] == 0:
