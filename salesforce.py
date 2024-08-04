@@ -1,7 +1,7 @@
 import simple_salesforce
 import os
 import datetime
-from datetime import datetime
+# from datetime import datetime, date, timedelta
 import calendar
 import requests
 import sys, logging
@@ -740,33 +740,35 @@ def update_opportunity(sf, opp):
     sf.Opportunity.update(opp['Id'], {'Name': opp['Name'], 'CloseDate': opp['CloseDate'], 'Amount': opp['Amount'], 'Description': opp['Description'], 'NextStep': opp['NextStep'], 'Type': opp['Type'], 'LeadSource': opp['LeadSource'], 'StageName': opp['StageName']})
 
 def build_filter_clause(filter_type):
-  """Builds the WHERE clause for the SQL query based on the filter type."""
-  now = datetime.now()
-  current_year = now.year
-  next_year = current_year + 1
-  current_quarter = (now.month - 1) // 3 + 1
+    """Builds the WHERE clause for the SQL query based on the filter type."""
+    now = datetime.datetime.now()
+    adate = datetime.datetime(2024,7,1)
+    current_year = now.year
+    next_year = current_year + 1
+    current_quarter = (now.month - 1) // 3 + 1
 
-  # Use date literals for comparisons within WHERE clause
-  if filter_type == 1:  # Current Quarter
-    start_date = datetime.date(current_year, (current_quarter - 1) * 3 + 1, 1).strftime('%Y-%m-%d')
-    end_date = datetime.date(current_year, current_quarter * 3, calendar.monthrange(current_year, current_quarter * 3)[1]).strftime('%Y-%m-%d')
-    filter_clause = f"AND CloseDate >= {start_date} AND CloseDate <= {end_date}"
-  elif filter_type == 2:  # Next Quarter
-    next_quarter = current_quarter + 1 if current_quarter < 4 else 1
-    next_year = current_year + 1 if next_quarter == 1 else current_year
-    start_date = datetime.date(next_year, (next_quarter - 1) * 3 + 1, 1).strftime('%Y-%m-%d')
-    end_date = datetime.date(next_year, next_quarter * 3, calendar.monthrange(next_year, next_quarter * 3)[1]).strftime('%Y-%m-%d')
-    filter_clause = f"AND CloseDate >= {start_date} AND CloseDate <= {end_date}"
-  elif filter_type == 3:  # Current Calendar Year
-    filter_clause = f"AND CloseDate >= {current_year}-01-01 AND CloseDate < {current_year+1}-01-01"  # Use YEAR function for year comparison
-  elif filter_type == 4:  # Next Calendar Year
-    filter_clause = f"AND CloseDate >= {next_year}-01-01 AND CloseDate < {next_year+1}-01-01"
-  elif filter_type == 5:
-    filter_clause = "None" # No filter
-  else:
-    filter_clause = ""  # No filter
+    if filter_type == 1:  # Current Quarter
+        start_date = datetime.date(current_year, (current_quarter - 1) * 3 + 1, 1).strftime('%Y-%m-%d')
+        end_date = datetime.date(current_year, current_quarter * 3, calendar.monthrange(current_year, current_quarter * 3)[1]).strftime('%Y-%m-%d')
+        filter_clause = f"AND CloseDate >= {start_date} AND CloseDate <= {end_date}"
+    elif filter_type == 2:  # Next Quarter
+        next_quarter = current_quarter + 1 if current_quarter < 4 else 1
+        next_year = current_year + 1 if next_quarter == 1 else current_year
+        start_date = datetime.date(next_year, (next_quarter - 1) * 3 + 1, 1).strftime('%Y-%m-%d')
+        end_date = datetime.date(next_year, next_quarter * 3, calendar.monthrange(next_year, next_quarter * 3)[1]).strftime('%Y-%m-%d')
+        filter_clause = f"AND CloseDate >= {start_date} AND CloseDate <= {end_date}"
 
-  return filter_clause
+
+    elif filter_type == 3:  # Current Calendar Year
+        filter_clause = f"AND CloseDate >= {current_year}-01-01 AND CloseDate < {current_year+1}-01-01"  # Use YEAR function for year comparison
+    elif filter_type == 4:  # Next Calendar Year
+        filter_clause = f"AND CloseDate >= {next_year}-01-01 AND CloseDate < {next_year+1}-01-01"
+    elif filter_type == 5:
+        filter_clause = "None" # No filter
+    else:
+        filter_clause = ""  # No filter
+
+    return filter_clause
 
 
 
