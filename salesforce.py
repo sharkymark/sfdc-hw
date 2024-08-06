@@ -1069,7 +1069,7 @@ def print_contacts(query, contacts):
         print(f"Description: {contact['Description']}\n")
 
 def format_datetime(dt_str):
-    dt = datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S.%f%z")
+    dt = datetime.datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S.%f%z")
     return dt.strftime("%Y-%m-%d %I:%M %p")
 
 def get_tasks(sf, contact_id, account_id, opp_id):
