@@ -1072,6 +1072,107 @@ def format_datetime(dt_str):
     dt = datetime.datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S.%f%z")
     return dt.strftime("%Y-%m-%d %I:%M %p")
 
+def update_task(sf, task_id):
+
+    # Find the task ID based on the task number
+    task = sf.Task.get(task_id)
+    print(f"\nUpdating task: ")
+    new_subject = input(f"Enter new subject ({task['Subject']}): ")
+    new_description = input(f"Enter new description ({task['Description']}): ")
+
+    if new_subject:
+        task['Subject'] = new_subject
+    elif new_description:
+        task['Description'] = new_description
+    
+    sf.Task.update(task_id, {'Subject': task['Subject'], 'Description': task['Description']})
+    print(f"\nUpdated task")
+    print(f"Task Id: {task_id}\nSubject: {task['Subject']}\nDescription: {task['Description']}\n")
+
+
+def search_tasks(sf):
+
+    exit_st = False
+    while not exit_st:
+
+        search_term = input("\nEnter a search term (task subject, account name, first name or last name) or 'quit' to exit: ")
+
+        if search_term.lower() == 'quit':
+            break
+
+        query = f"""
+            SELECT Id, Subject, Description, Status, Priority, CreatedDate, CreatedById, 
+                Account.Name, CreatedBy.Name, Who.FirstName, Who.LastName 
+            FROM Task 
+            WHERE Subject LIKE '%{search_term}%'
+            OR Account.Name LIKE '%{search_term}%' 
+            OR Who.FirstName LIKE '%{search_term}%' 
+            OR Who.LastName LIKE '%{search_term}%'
+            ORDER BY CreatedDate DESC
+        """
+
+        print("\nTasks query: ", query)
+
+        print("\nTasks:\n")
+
+        try:
+            tasks = sf.query(query)
+        except requests.exceptions.ConnectionError:
+            sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+            print(reconn)
+            tasks = sf.query(query)
+
+        if tasks['totalSize'] > 0:
+
+            # Print results
+            for i, task in enumerate(tasks['records']):
+                print(f"\n{i+1}.")
+                print(f"{format_datetime(task['CreatedDate'])}")
+                if 'Who' in task and task['Who'] is not None:
+                    print(f"To: {task['Who']['FirstName']} {task['Who']['LastName']}")
+                print(f"Created by: {task['CreatedBy']['Name']}")
+                print(f"Subject: ", task['Subject'])
+                print(f"Description: ", task['Description'])
+                print(f"Status: ", task['Status'])
+                print(f"Priority: ", task['Priority'])
+
+            while True:
+
+                print("\nOptions:")
+                print("1. Re-enter search criteria")
+                print("2. Update a specific task by number in the list")
+                print("3. Exit to main menu\n")
+            
+                try:
+                    option = int(input("Enter your option: "))
+                except ValueError:
+                    print("\nInvalid entry. Please enter a valid number.")
+                    continue
+
+                if option == 1:
+                    break
+                elif option == 2:
+
+                    try:
+                        task_index = int(input("\nEnter the task number you want to update: "))
+                        if task_index > 0 and task_index <= tasks['totalSize']:
+                            task_id = tasks['records'][task_index-1]['Id']
+                            update_task(sf, task_id)
+                            break
+                    except ValueError:
+                        print("\nInvalid entry. Please enter a valid task number.")
+
+                elif option == 3:
+                    exit_st = True
+                    break
+                else:
+                    print("\nInvalid task index")                    
+                    continue                  
+
+
+        else:
+            print("No tasks found")
+
 def get_tasks(sf, contact_id, account_id, opp_id):
 
     if contact_id:
@@ -1363,6 +1464,7 @@ def main():
             'sa' to search or update accounts (and contacts),
             'sc' to search or update contacts,
             'so' to search or update opportunities,
+            'st' to search tasks,
             'ca' to create an account,
             'cc' to create a contact,
             'co' to create an opportunity,
@@ -1378,6 +1480,8 @@ def main():
             if action.lower() == 'q':
                 break
 
+            elif action.lower() == 'st':
+                search_tasks(sf)
             elif action.lower() == 'pl':                 
                 print("\nAccount Picklists:\n")
                 account_picklists = sf.Account.describe()['fields']
