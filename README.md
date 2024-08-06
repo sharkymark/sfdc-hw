@@ -10,6 +10,8 @@ This example uses Python and is a command line application
 
 Simple Salesforce is a basic Salesforce.com REST API client built for Python 3.8, 3.9, 3.10, 3.11, and 3.12. The goal is to provide a very low-level interface to the REST Resource and APEX API, returning a dictionary of the API JSON response. 
 
+![Main menu screenshot](./docs/images/sfdc-hw.png)
+
 ## Authentication
 
 Credentials include username, password and token. They are read as environment variables which you place in `.zshrc` or `.bashrc`
