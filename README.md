@@ -2,6 +2,8 @@
 
 Salesforce is a Customer Relationship Management "CRM" web application. This example uses the API to query the CRM.
 
+![Main menu screenshot](./docs/images/sfdc-hw.png)
+
 ## Programming language
 
 This example uses Python and is a command line application
@@ -9,8 +11,6 @@ This example uses Python and is a command line application
 ## API
 
 Simple Salesforce is a basic Salesforce.com REST API client built for Python 3.8, 3.9, 3.10, 3.11, and 3.12. The goal is to provide a very low-level interface to the REST Resource and APEX API, returning a dictionary of the API JSON response. 
-
-![Main menu screenshot](./docs/images/sfdc-hw.png)
 
 ## Authentication
 
