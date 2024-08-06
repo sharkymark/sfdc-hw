@@ -1417,6 +1417,8 @@ def main():
     global opp_lead_source_options
     global opp_contact_role_options
     global subject_options
+    global firstconn
+    global reconn
 
     username = os.environ['SALESFORCE_USERNAME']
     password = os.environ['SALESFORCE_PASSWORD']
@@ -1464,7 +1466,7 @@ def main():
             'sa' to search or update accounts (and contacts),
             'sc' to search or update contacts,
             'so' to search or update opportunities,
-            'st' to search tasks,
+            'st' to search or update tasks,
             'ca' to create an account,
             'cc' to create a contact,
             'co' to create an opportunity,
