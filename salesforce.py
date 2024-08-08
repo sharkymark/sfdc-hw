@@ -996,60 +996,64 @@ def get_opp_details(opp):
 
 def create_task(sf, contact_id, account_id, opp_id):
 
-    print("\nSubject picklist values:\n")
-    for i, option in enumerate(subject_options):
-        print(f"{i+1}. {option['value']}")
-    print(f"{len(subject_options)+1}. Other (enter a custom value)")
-
     try:
-        subject_choice = int(input("\nEnter the number for the task type: "))
+        print("\nSubject picklist values:\n")
+        for i, option in enumerate(subject_options):
+            print(f"{i+1}. {option['value']}")
+        print(f"{len(subject_options)+1}. Other (enter a custom value)")
 
-        if subject_choice > 0 and subject_choice <= len(subject_options):
-            subject_value = subject_options[subject_choice - 1]['value']
-        elif subject_choice == len(subject_options) + 1:
-            subject_value = input("\nEnter a custom task type: ")
-        else:
+        try:
+            subject_choice = int(input("\nEnter the number for the task type: "))
+
+            if subject_choice > 0 and subject_choice <= len(subject_options):
+                subject_value = subject_options[subject_choice - 1]['value']
+            elif subject_choice == len(subject_options) + 1:
+                subject_value = input("\nEnter a custom task type: ")
+            else:
+                subject_value = ''
+        except ValueError:
             subject_value = ''
-    except ValueError:
-        subject_value = ''
 
-    description = input("\nEnter the description of the task: ")
+        description = input("\nEnter the description of the task: ")
 
-    if account_id:
-        what = "Account"
-        what_id = account_id
-    elif opp_id:
-        what = "Opportunity"
-        what_id = opp_id
-    else:
-        what = ""
-        what_id = ""
+        if account_id:
+            what = "Account"
+            what_id = account_id
+        elif opp_id:
+            what = "Opportunity"
+            what_id = opp_id
+        else:
+            what = ""
+            what_id = ""
 
-    associate_with_what = input(f"\nAssociate with {what}? (y/n): ")
+        associate_with_what = input(f"\nAssociate with {what}? (y/n): ")
 
-    try:
-        sf.Task.create({
-            'Subject': subject_value,
-            'Description': description,
-            'Status': 'Completed',
-            'Priority': 'Normal',
-            'WhoId': contact_id,
-            'WhatId': what_id
-        })
-        print("\nTask record created successfully!\n")
-    except requests.exceptions.ConnectionError:
-        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-        print(reconn)
-        sf.Task.create({
-            'Subject': subject,
-            'Description': description,
-            'Status': 'Completed',
-            'Priority': 'Normal',
-            'WhoId': contact_id,
-            'WhatId': what_id
-        })
-        print("\nTask record created successfully!\n")
-
+        try:
+            sf.Task.create({
+                'Subject': subject_value,
+                'Description': description,
+                'Status': 'Completed',
+                'Priority': 'Normal',
+                'WhoId': contact_id,
+                'WhatId': what_id
+            })
+            print("\nTask record created successfully!\n")
+        except requests.exceptions.ConnectionError:
+            sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+            print(reconn)
+            sf.Task.create({
+                'Subject': subject,
+                'Description': description,
+                'Status': 'Completed',
+                'Priority': 'Normal',
+                'WhoId': contact_id,
+                'WhatId': what_id
+            })
+            print("\nTask record created successfully!\n")
+    except KeyboardInterrupt:
+        print("\nTask creation cancelled. Returning to main menu.")
+        return
+        
 def print_contacts(query, contacts):
 
     print("\nFiltered contacts:\n")
@@ -1308,51 +1312,55 @@ def search_contacts(sf):
 
 def create_contact(sf, account_id):
 
-    first_name = input("Enter contact first name: ")
-    last_name = input("Enter contact last name: ")
-    email = input("Enter contact email: ")
-    phone = input("Enter contact phone: ")
-    title = input("Enter contact title: ")
-    description = input("Enter contact description: ")
-    print("Lead Source picklist values:")
-    for i, option in enumerate(lead_source_options):
-        print(f"{i+1}. {option['value']}")
+    try:        
 
-    try:
-        lead_source_choice = int(input("Enter the number for the Lead Source: "))
+        first_name = input("Enter contact first name: ")
+        last_name = input("Enter contact last name: ")
+        email = input("Enter contact email: ")
+        phone = input("Enter contact phone: ")
+        title = input("Enter contact title: ")
+        description = input("Enter contact description: ")
+        print("Lead Source picklist values:")
+        for i, option in enumerate(lead_source_options):
+            print(f"{i+1}. {option['value']}")
 
-        if lead_source_choice > 0 and lead_source_choice <= len(lead_source_options):
-            lead_source_value = lead_source_options[lead_source_choice - 1]['value']
-        else:
+        try:
+            lead_source_choice = int(input("Enter the number for the Lead Source: "))
+
+            if lead_source_choice > 0 and lead_source_choice <= len(lead_source_options):
+                lead_source_value = lead_source_options[lead_source_choice - 1]['value']
+            else:
+                lead_source_value = ''
+        except ValueError:
             lead_source_value = ''
-    except ValueError:
-        lead_source_value = ''
 
-    department = input("Enter contact department: ")
-    address = input("Enter contact mailing address: ")
-    city = input("Enter contact city: ")
-    state = input("Enter contact state: ")
-    postalcode = input("Enter contact zip code: ")
-    country = input("Enter contact country: ")
-    contact = sf.Contact.create({
-        'AccountId': account_id,
-        'FirstName': first_name,
-        'LastName': last_name,
-        'Email': email,
-        'Description': description,
-        'LeadSource': lead_source_value,
-        'Phone': phone,
-        'Title': title,
-        'Department': department,
-        'MailingStreet': address,
-        'MailingCity': city,
-        'MailingState': state,
-        'MailingPostalcode': postalcode,
-        'MailingCountry': country   
-    })
-    contact_id = contact.get('id')  # Get the account ID from the response
-    print(f"\nCreated contact {contact_id}\n")
-
+        department = input("Enter contact department: ")
+        address = input("Enter contact mailing address: ")
+        city = input("Enter contact city: ")
+        state = input("Enter contact state: ")
+        postalcode = input("Enter contact zip code: ")
+        country = input("Enter contact country: ")
+        contact = sf.Contact.create({
+            'AccountId': account_id,
+            'FirstName': first_name,
+            'LastName': last_name,
+            'Email': email,
+            'Description': description,
+            'LeadSource': lead_source_value,
+            'Phone': phone,
+            'Title': title,
+            'Department': department,
+            'MailingStreet': address,
+            'MailingCity': city,
+            'MailingState': state,
+            'MailingPostalcode': postalcode,
+            'MailingCountry': country   
+        })
+        contact_id = contact.get('id')  # Get the account ID from the response
+        print(f"\nCreated contact {contact_id}\n")
+    except KeyboardInterrupt:
+        print("\n\nContact creation cancelled. Returning to previous menu.\n")
+        return
 
 def get_account_picklists(sf):
     account_fields = sf.Account.describe()
@@ -1523,53 +1531,131 @@ def main():
 
             elif action.lower() == 'co':
 
-                account_name = input("\nAn account must already exist to create an opportunity. Enter account name to lookup id: ")
-                query = f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name"
                 try:
-                    account_results = sf.query(query)
-                except requests.exceptions.ConnectionError:
-                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                    print(reconn)
-                    account_results = sf.query(query)
-
-
-                if account_results['totalSize'] == 0:
-                    print("\nNo accounts found")
-                elif account_results['totalSize'] == 1:
-                    account_id = account_results['records'][0]['Id']
-                    full_account_name = account_results['records'][0]['Name']
-                    print(f"\nFound account: {account_results['records'][0]['Name']} with Id: {account_id}\n")
-                else:
-                    print("\nMultiple accounts\n")
-                    for i, account in enumerate(account_results['records']):
-                        print(f"{i+1}. {account['Name']}")
+                    account_name = input("\nAn account must already exist to create an opportunity. Enter account name to lookup id: ")
+                    query = f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name"
                     try:
-                        selection = int(input(f"Select the correct account (1-{account_results['totalSize']}): "))
-                        account_id = account_results['records'][selection-1]['Id']
-                        full_account_name = account_results['records'][selection-1]['Name']
-                    except ValueError:
-                        print("\nInvalid entry. Please enter a valid number.")
-                        continue
+                        account_results = sf.query(query)
+                    except requests.exceptions.ConnectionError:
+                        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                        print(reconn)
+                        account_results = sf.query(query)
 
-                if 'account_id' in locals():
 
-                    name = input("Enter opportunity name: ")
-                    while True:
-                        close_date = input("Enter close date (YYYY-MM-DD): ")
+                    if account_results['totalSize'] == 0:
+                        print("\nNo accounts found")
+                    elif account_results['totalSize'] == 1:
+                        account_id = account_results['records'][0]['Id']
+                        full_account_name = account_results['records'][0]['Name']
+                        print(f"\nFound account: {account_results['records'][0]['Name']} with Id: {account_id}\n")
+                    else:
+                        print("\nMultiple accounts\n")
+                        for i, account in enumerate(account_results['records']):
+                            print(f"{i+1}. {account['Name']}")
                         try:
-                            datetime.datetime.strptime(close_date, '%Y-%m-%d')
-                            break  # Valid date, exit the loop
+                            selection = int(input(f"Select the correct account (1-{account_results['totalSize']}): "))
+                            account_id = account_results['records'][selection-1]['Id']
+                            full_account_name = account_results['records'][selection-1]['Name']
                         except ValueError:
-                            print("Invalid close date format. Please enter in YYYY-MM-DD format.")
+                            print("\nInvalid entry. Please enter a valid number.")
+                            continue
 
-                    amount = input("Enter amount: ")
+                    if 'account_id' in locals():
 
-                    print("Opportunity Type picklist values:")
-                    for i, option in enumerate(opp_type_options):
+                        name = input("Enter opportunity name: ")
+                        while True:
+                            close_date = input("Enter close date (YYYY-MM-DD): ")
+                            try:
+                                datetime.datetime.strptime(close_date, '%Y-%m-%d')
+                                break  # Valid date, exit the loop
+                            except ValueError:
+                                print("Invalid close date format. Please enter in YYYY-MM-DD format.")
+
+                        amount = input("Enter amount: ")
+
+                        print("Opportunity Type picklist values:")
+                        for i, option in enumerate(opp_type_options):
+                            print(f"{i+1}. {option['value']}")
+
+                        try:
+                            type_choice = int(input("Enter the number for the Opportunity Type (0 to skip): "))
+                            if type_choice > 0 and type_choice <= len(type_options):
+                                type_value = type_options[type_choice - 1]['value']
+                            else:
+                                type_value = ''
+                        except ValueError:
+                            type_value = ''
+
+                        print("Sales Stage picklist values:")
+                        for i, option in enumerate(stage_options):
+                            print(f"{i+1}. {option['value']}")
+
+                        try:
+                            stage_choice = int(input("Enter the number for the Sales Stage (0 to skip): "))
+                            if stage_choice > 0 and stage_choice <= len(stage_options):
+                                stage_value = stage_options[stage_choice - 1]['value']
+                            else:
+                                stage_value = ''
+                        except ValueError:
+                            stage_value = ''
+
+                        print("Lead Source picklist values:")
+                        for i, option in enumerate(opp_lead_source_options):
+                            print(f"{i+1}. {option['value']}")
+
+                        try:
+                            source_choice = int(input("Enter the number for the Lead Source (0 to skip): "))
+                            if source_choice > 0 and source_choice <= len(opp_lead_source_options):
+                                source_value = opp_lead_source_options[source_choice - 1]['value']
+                            else:
+                                source_value = ''
+                        except ValueError:
+                            source_value = ''
+
+
+                        description = input("Enter opportunity description: ")
+                        next_step = input("Enter next step: (MM 7/26: 2nd demo to broader audience) ")
+
+                        try:
+                            opportunity = sf.Opportunity.create({'AccountId': account_id, 'Name': name,  'Type': type_value, 'StageName': stage_value,  'LeadSource': source_value, 'CloseDate': close_date, 'Amount': amount, 'Description': description, 'NextStep': next_step})
+                        except requests.exceptions.ConnectionError:
+                            sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                            print(reconn)
+                            opportunity = sf.Opportunity.create({'AccountId': account_id, 'Name': name,  'Type': type_value, 'StageName': stage_value,  'LeadSource': source_value, 'CloseDate': close_date, 'Amount': amount, 'Description': description, 'NextStep': next_step})
+
+                        opportunity_id = opportunity.get('id')
+                        print(f"\nCreated opportunity {opportunity_id}\n")
+                        print(f"Opportunity Id: {opportunity_id}\nAccount Name: {full_account_name}\nName: {name}\nType: {type_value}\nStage: {stage_value}\nLead Source: {source_value}\nClose Date: {close_date}\nAmount: {amount}\nDescription: {description}\nNext Step: {next_step}\n")
+                except KeyboardInterrupt:
+                    print("\n\nOpportunity creation cancelled. Returning to previous menu.\n")
+
+            elif action.lower() == 'ca':
+
+                try:
+                    name = input("Enter account name: ")
+                    website = input("Enter account website: ")
+                    description = input("Enter account description: ")
+
+                    print("Industry picklist values:")
+                    for i, option in enumerate(industry_options):
                         print(f"{i+1}. {option['value']}")
-
+                    
                     try:
-                        type_choice = int(input("Enter the number for the Opportunity Type (0 to skip): "))
+                        industry_choice = int(input("Enter the number for the Industry (0 to skip): "))
+                        if industry_choice > 0 and industry_choice <= len(industry_options):
+                            industry_value = industry_options[industry_choice - 1]['value']
+                        else:
+                            industry_value = ''
+                    except ValueError:
+                        industry_value = ''
+
+                    print("Account Type picklist values:")
+                    for i, option in enumerate(type_options):
+                        print(f"{i+1}. {option['value']}")
+                    
+                    try:
+                        type_choice = int(input("Enter the number for the Account Type (0 to skip): "))
+                    
                         if type_choice > 0 and type_choice <= len(type_options):
                             type_value = type_options[type_choice - 1]['value']
                         else:
@@ -1577,95 +1663,19 @@ def main():
                     except ValueError:
                         type_value = ''
 
-                    print("Sales Stage picklist values:")
-                    for i, option in enumerate(stage_options):
-                        print(f"{i+1}. {option['value']}")
-
                     try:
-                        stage_choice = int(input("Enter the number for the Sales Stage (0 to skip): "))
-                        if stage_choice > 0 and stage_choice <= len(stage_options):
-                            stage_value = stage_options[stage_choice - 1]['value']
-                        else:
-                            stage_value = ''
-                    except ValueError:
-                        stage_value = ''
-
-                    print("Lead Source picklist values:")
-                    for i, option in enumerate(opp_lead_source_options):
-                        print(f"{i+1}. {option['value']}")
-
-                    try:
-                        source_choice = int(input("Enter the number for the Lead Source (0 to skip): "))
-                        if source_choice > 0 and source_choice <= len(opp_lead_source_options):
-                            source_value = opp_lead_source_options[source_choice - 1]['value']
-                        else:
-                            source_value = ''
-                    except ValueError:
-                        source_value = ''
-
-
-                    description = input("Enter opportunity description: ")
-                    next_step = input("Enter next step: (MM 7/26: 2nd demo to broader audience) ")
-
-                    try:
-                        opportunity = sf.Opportunity.create({'AccountId': account_id, 'Name': name,  'Type': type_value, 'StageName': stage_value,  'LeadSource': source_value, 'CloseDate': close_date, 'Amount': amount, 'Description': description, 'NextStep': next_step})
+                        account = sf.Account.create({'Name': name, 'Website': website, 'Description': description, 'Industry': industry_value, 'Type': type_value})
                     except requests.exceptions.ConnectionError:
                         sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
                         print(reconn)
-                        opportunity = sf.Opportunity.create({'AccountId': account_id, 'Name': name,  'Type': type_value, 'StageName': stage_value,  'LeadSource': source_value, 'CloseDate': close_date, 'Amount': amount, 'Description': description, 'NextStep': next_step})
+                        account = sf.Account.create({'Name': name, 'Website': website, 'Description': description, 'Industry': industry_value, 'Type': type_value})
 
-                    opportunity_id = opportunity.get('id')
-                    print(f"\nCreated opportunity {opportunity_id}\n")
-                    print(f"Opportunity Id: {opportunity_id}\nAccount Name: {full_account_name}\nName: {name}\nType: {type_value}\nStage: {stage_value}\nLead Source: {source_value}\nClose Date: {close_date}\nAmount: {amount}\nDescription: {description}\nNext Step: {next_step}\n")
-
-
-
-
-
-            elif action.lower() == 'ca':
-                name = input("Enter account name: ")
-                website = input("Enter account website: ")
-                description = input("Enter account description: ")
-
-                print("Industry picklist values:")
-                for i, option in enumerate(industry_options):
-                    print(f"{i+1}. {option['value']}")
-                
-                try:
-                    industry_choice = int(input("Enter the number for the Industry (0 to skip): "))
-                    if industry_choice > 0 and industry_choice <= len(industry_options):
-                        industry_value = industry_options[industry_choice - 1]['value']
-                    else:
-                        industry_value = ''
-                except ValueError:
-                    industry_value = ''
-
-                print("Account Type picklist values:")
-                for i, option in enumerate(type_options):
-                    print(f"{i+1}. {option['value']}")
-                
-                try:
-                    type_choice = int(input("Enter the number for the Account Type (0 to skip): "))
-                
-                    if type_choice > 0 and type_choice <= len(type_options):
-                        type_value = type_options[type_choice - 1]['value']
-                    else:
-                        type_value = ''
-                except ValueError:
-                    type_value = ''
-
-                try:
-                    account = sf.Account.create({'Name': name, 'Website': website, 'Description': description, 'Industry': industry_value, 'Type': type_value})
-                except requests.exceptions.ConnectionError:
-                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                    print(reconn)
-                    account = sf.Account.create({'Name': name, 'Website': website, 'Description': description, 'Industry': industry_value, 'Type': type_value})
-
-                
-                account_id = account.get('id')  # Get the account ID from the response
-                print(f"\nCreated account {account_id}\n")
-                print(f"Account Id: {account_id}\nName: {name}\nIndustry: {industry_value}\nType: {type_value}\nDescription: {description}\nWebsite: {website}")
-
+                    
+                    account_id = account.get('id')  # Get the account ID from the response
+                    print(f"\nCreated account {account_id}\n")
+                    print(f"Account Id: {account_id}\nName: {name}\nIndustry: {industry_value}\nType: {type_value}\nDescription: {description}\nWebsite: {website}")
+                except KeyboardInterrupt:
+                    print("\n\nAccount creation cancelled. Returning to previous menu.\n")
             elif action.lower() == 'cc':
 
 
@@ -1686,15 +1696,25 @@ def main():
                     account_id = account_results['records'][0]['Id']
                     print(f"\nFound account: {account_results['records'][0]['Name']} with Id: {account_id}\n")
                 else:
+
                     print("\nMultiple accounts found:\n")
                     for i, account in enumerate(account_results['records']):
                         print(f"{i+1}. {account['Name']}")
-                    try:
-                        selection = int(input(f"Select the correct account (1-{account_results['totalSize']}): "))
-                        account_id = account_results['records'][selection-1]['Id']
-                    except ValueError:
-                        print("\nInvalid entry. Please enter a valid number.")
-                        continue
+
+                    while True:
+                        selection = input(f"\nSelect the correct account (1-{account_results['totalSize']}) or type 'quit' to return to the previous menu: ")
+                        if selection.lower() == 'quit':
+                            break
+                        
+                        try:
+                            selection = int(selection)
+                            account_id = account_results['records'][selection-1]['Id']
+                            break
+                        except ValueError:
+                            print("\nInvalid entry. Please enter a valid number.")
+                            continue
+                        except IndexError:
+                            print(f"\nInvalid entry. Please enter a number between 1 and {account_results['totalSize']}.")
 
                 if 'account_id' in locals():
                     create_contact(sf, account_id)
