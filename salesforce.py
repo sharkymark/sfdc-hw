@@ -5,6 +5,7 @@ import datetime
 import calendar
 import requests
 import sys, logging
+import textwrap
 
 def set_default_settings():
     global preferences
@@ -1014,7 +1015,17 @@ def create_task(sf, contact_id, account_id, opp_id):
         except ValueError:
             subject_value = ''
 
-        description = input("\nEnter the description of the task: ")
+        print(f"\nEnter the description of the task (press Ctrl+D to finish): ")
+
+        description = []
+        while True:
+            try:
+                line = input()
+                description.append(line)
+            except EOFError:
+                break
+
+        description = '\n'.join(description)
 
         if account_id:
             what = "Account"
