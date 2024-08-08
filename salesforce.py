@@ -50,6 +50,19 @@ def validate_date(date_string):
   except ValueError:
     return False
 
+def multi_line_input(prompt):
+
+    print(prompt)
+    print("Press Ctrl-D when finished.\n")
+    lines = []
+    while True:
+        try:
+            line = input()
+            lines.append(line)
+        except EOFError:
+            break
+    return '\n'.join(lines)
+
 def display_account(account_id,account):
 
     print(f"\nCreated account {account_id}\n")
@@ -61,7 +74,7 @@ def update_account(sf, account_id):
 
     new_name = input(f"Enter new name ({account['Name']}): ")
     new_website = input(f"Enter new website ({account['Website']}): ")
-    new_description = input(f"Enter new description ({account['Description']}): ")
+    new_description = multi_line_input("Enter new description ({account['Description']}): ")
 
     print(f"Industry picklist values ({account['Industry']}):")
     for i, option in enumerate(industry_options):
@@ -129,7 +142,7 @@ def update_contact(sf, contact_id):
     except ValueError:
         new_lead_source_value = ''
 
-    new_description = input(f"Enter new description ({contact['Description']}): ")
+    new_description = multi_line_input("Enter new description ({contact['Description']}): ")
 
     if new_first_name:
         contact['FirstName'] = new_first_name
@@ -654,7 +667,6 @@ def manage_contactroles(sf, opp):
             print("\nInvalid contact role index")
             break
 
-
 def update_opportunity(sf, opp):
 
     account = get_accountdetails(sf, opp['AccountId'])
@@ -691,8 +703,8 @@ def update_opportunity(sf, opp):
     except ValueError:
         new_stage_value = ''
 
+    new_description = multi_line_input("Enter new description ({opp['Description']}): ")
 
-    new_description = input(f"Enter new description ({opp['Description']}): ")
     new_next_step = input(f"Enter new next step ({opp['NextStep']}): ")
 
     print(f"\nType picklist values ({opp['Type']}):")
@@ -1015,17 +1027,7 @@ def create_task(sf, contact_id, account_id, opp_id):
         except ValueError:
             subject_value = ''
 
-        print(f"\nEnter the description of the task (press Ctrl+D to finish): ")
-
-        description = []
-        while True:
-            try:
-                line = input()
-                description.append(line)
-            except EOFError:
-                break
-
-        description = '\n'.join(description)
+        description = multi_line_input("Enter the description of the task:")
 
         if account_id:
             what = "Account"
@@ -1093,7 +1095,7 @@ def update_task(sf, task_id):
     task = sf.Task.get(task_id)
     print(f"\nUpdating task: ")
     new_subject = input(f"Enter new subject ({task['Subject']}): ")
-    new_description = input(f"Enter new description ({task['Description']}): ")
+    new_description = multi_line_input("Enter new description ({task['Description']}): ")
 
     if new_subject:
         task['Subject'] = new_subject
@@ -1330,7 +1332,7 @@ def create_contact(sf, account_id):
         email = input("Enter contact email: ")
         phone = input("Enter contact phone: ")
         title = input("Enter contact title: ")
-        description = input("Enter contact description: ")
+        description = multi_line_input("Enter contact description: ")
         print("Lead Source picklist values:")
         for i, option in enumerate(lead_source_options):
             print(f"{i+1}. {option['value']}")
@@ -1624,7 +1626,7 @@ def main():
                             source_value = ''
 
 
-                        description = input("Enter opportunity description: ")
+                        description = multi_line_input("Enter opportunity description: ")
                         next_step = input("Enter next step: (MM 7/26: 2nd demo to broader audience) ")
 
                         try:
@@ -1645,7 +1647,7 @@ def main():
                 try:
                     name = input("Enter account name: ")
                     website = input("Enter account website: ")
-                    description = input("Enter account description: ")
+                    description = multi_line_input("Enter account description: ")
 
                     print("Industry picklist values:")
                     for i, option in enumerate(industry_options):
