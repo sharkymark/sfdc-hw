@@ -1053,7 +1053,7 @@ def create_task(sf, contact_id, account_id, opp_id):
     except KeyboardInterrupt:
         print("\nTask creation cancelled. Returning to main menu.")
         return
-        
+
 def print_contacts(query, contacts):
 
     print("\nFiltered contacts:\n")
@@ -1678,47 +1678,49 @@ def main():
                     print("\n\nAccount creation cancelled. Returning to previous menu.\n")
             elif action.lower() == 'cc':
 
-
-                account_name = input("\nAn account must already exist to create a contact. Enter account name to lookup id: ")
-
-                query = f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name"
                 try:
-                    account_results = sf.query(query)
-                except requests.exceptions.ConnectionError:
-                    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
-                    print(reconn)
-                    account_results = sf.query(query)
+
+                    account_name = input("\nAn account must already exist to create a contact. Enter account name to lookup id: ")
+
+                    query = f"SELECT Id, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name"
+                    try:
+                        account_results = sf.query(query)
+                    except requests.exceptions.ConnectionError:
+                        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                        print(reconn)
+                        account_results = sf.query(query)
 
 
-                if account_results['totalSize'] == 0:
-                    print("\nNo accounts found")
-                elif account_results['totalSize'] == 1:
-                    account_id = account_results['records'][0]['Id']
-                    print(f"\nFound account: {account_results['records'][0]['Name']} with Id: {account_id}\n")
-                else:
+                    if account_results['totalSize'] == 0:
+                        print("\nNo accounts found")
+                    elif account_results['totalSize'] == 1:
+                        account_id = account_results['records'][0]['Id']
+                        print(f"\nFound account: {account_results['records'][0]['Name']} with Id: {account_id}\n")
+                    else:
 
-                    print("\nMultiple accounts found:\n")
-                    for i, account in enumerate(account_results['records']):
-                        print(f"{i+1}. {account['Name']}")
+                        print("\nMultiple accounts found:\n")
+                        for i, account in enumerate(account_results['records']):
+                            print(f"{i+1}. {account['Name']}")
 
-                    while True:
-                        selection = input(f"\nSelect the correct account (1-{account_results['totalSize']}) or type 'quit' to return to the previous menu: ")
-                        if selection.lower() == 'quit':
-                            break
-                        
-                        try:
-                            selection = int(selection)
-                            account_id = account_results['records'][selection-1]['Id']
-                            break
-                        except ValueError:
-                            print("\nInvalid entry. Please enter a valid number.")
-                            continue
-                        except IndexError:
-                            print(f"\nInvalid entry. Please enter a number between 1 and {account_results['totalSize']}.")
+                        while True:
+                            selection = input(f"\nSelect the correct account (1-{account_results['totalSize']}) or type 'quit' to return to the previous menu: ")
+                            if selection.lower() == 'quit':
+                                break
+                            
+                            try:
+                                selection = int(selection)
+                                account_id = account_results['records'][selection-1]['Id']
+                                break
+                            except ValueError:
+                                print("\nInvalid entry. Please enter a valid number.")
+                                continue
+                            except IndexError:
+                                print(f"\nInvalid entry. Please enter a number between 1 and {account_results['totalSize']}.")
 
-                if 'account_id' in locals():
-                    create_contact(sf, account_id)
-
+                    if 'account_id' in locals():
+                        create_contact(sf, account_id)
+                except KeyboardInterrupt:
+                    print("\n\nContact creation cancelled. Returning to previous menu.\n")
 
             elif action.lower() == 'so':
 
@@ -1859,19 +1861,23 @@ def main():
                 search_contacts(sf)
 
             elif action.lower() == 'da':
-                account_name = input("\nEnter a partial account name to lookup accounts to delete: ")
+                try:
+                    account_name = input("\nEnter a partial account name to lookup accounts to delete: ")
 
-                if account_name.lower() == 'quit':
-                    break
-                else:
-                    query = f"SELECT Id, CreatedDate, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name"
-                    delete_accounts(sf, query)
-
+                    if account_name.lower() == 'quit':
+                        break
+                    else:
+                        query = f"SELECT Id, CreatedDate, Name FROM Account WHERE Name LIKE '%{account_name}%' ORDER BY Name"
+                        delete_accounts(sf, query)
+                except KeyboardInterrupt:
+                    print("\n\nAccount deletion cancelled. Returning to previous menu.\n")
             elif action.lower() == 'dc':
-                contact_name = input("\nEnter a partial name or email to lookup contacts to delete: ")
-                query = f"SELECT Id, CreatedDate, FirstName, LastName, Email, Title, Department, Phone FROM Contact WHERE FirstName LIKE '%{contact_name}%' OR LastName LIKE '%{contact_name}%' OR Email LIKE '%{contact_name}%' ORDER BY LastName"
-                delete_contacts(sf, query)
-
+                try:
+                    contact_name = input("\nEnter a partial name or email to lookup contacts to delete: ")
+                    query = f"SELECT Id, CreatedDate, FirstName, LastName, Email, Title, Department, Phone FROM Contact WHERE FirstName LIKE '%{contact_name}%' OR LastName LIKE '%{contact_name}%' OR Email LIKE '%{contact_name}%' ORDER BY LastName"
+                    delete_contacts(sf, query)
+                except KeyboardInterrupt:
+                    print("\n\nContact deletion cancelled. Returning to previous menu.\n")
             elif action.lower() == 'd':
                 print("\nDescribe the account object:\n")
                 account_fields = sf.Account.describe()
