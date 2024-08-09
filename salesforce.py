@@ -407,6 +407,23 @@ def get_accountdetails(sf, account_id):
     else:
         print(f"\tAccount {i+1}: Account not found")
 
+def get_opportunitydetails(sf, opportunity_id):
+
+    # Fetch opportunity information
+    opp_query = f"SELECT Id, Name FROM Opportunity WHERE Id = '{opportunity_id}' ORDER BY Name"
+
+    try:
+        opp_result = sf.query(opp_query)
+    except requests.exceptions.ConnectionError:
+        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        print(reconn)
+        opp_result = sf.query(opp_query)
+
+    if opp_result['totalSize'] > 0:
+        return opp_result['records'][0]
+    else:
+        print(f"\nOpportunity {i+1}: Opportunity not found")
+
 def get_contacts(sf):
 
     search_term = input("\nEnter a search term (first name, last name, email, or title): ")
@@ -1007,6 +1024,20 @@ def get_opp_details(opp):
     print(f"\nAccount Id: {opp['AccountId']}")
     print(f"Opportunity Id: {opp['Id']}")
 
+def get_print_account_opp_contact(sf, action, subject_value, description, contact_id, account_id, opp_id):
+
+    print(f"\n{action} record created successfully!\n\n")
+    print(f"Subject: {subject_value}\n\nDescription: {description}\n\nStatus: Completed\n\n")
+    if account_id:
+        account = get_accountdetails(sf, account_id)
+        print(f"Account: {account['Name']} ({account_id})\n")
+    if opp_id:
+        opp = get_opportunitydetails(sf, opp_id)
+        print(f"Opportunity: {opp['Name']} ({opp_id})\n")
+    if contact_id:
+        contact = get_contactdetails(sf, contact_id)
+        print(f"Contact: {contact['FirstName']} {contact['LastName']} ({contact_id})\n")
+
 def create_task(sf, contact_id, account_id, opp_id):
 
     try:
@@ -1050,7 +1081,8 @@ def create_task(sf, contact_id, account_id, opp_id):
                 'WhoId': contact_id,
                 'WhatId': what_id
             })
-            print("\nTask record created successfully!\n")
+            get_print_account_opp_contact(sf, "Task", subject_value, description, contact_id, account_id, opp_id)
+
         except requests.exceptions.ConnectionError:
             sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
             print(reconn)
@@ -1062,7 +1094,11 @@ def create_task(sf, contact_id, account_id, opp_id):
                 'WhoId': contact_id,
                 'WhatId': what_id
             })
-            print("\nTask record created successfully!\n")
+            get_print_account_opp_contact(sf, "Task", subject_value, description, contact_id, account_id, opp_id)
+
+
+
+            
     except KeyboardInterrupt:
         print("\nTask creation cancelled. Returning to main menu.")
         return
