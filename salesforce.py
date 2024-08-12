@@ -1480,14 +1480,15 @@ def switch_deployment():
     deployment_choice = input(f"\nEnter: ")
 
     if deployment_choice == '1':
-        return set_current_deployment(deployment1)
+        deployment_choice = deployment1
     elif deployment_choice == '2':
-        return set_current_deployment(deployment2)
+        deployment_choice = deployment2
     else:
         print("Invalid choice. Returning to main menu.")
         return
 
-    print("Salesforce deployment switched successfully.")
+    print(f"\nSwitched successfully to Salesforce deployment {deployment_choice['username']}.")
+    return set_current_deployment(deployment_choice)
 
 def set_current_deployment(deployment):
     global current_deployment
@@ -1496,7 +1497,7 @@ def set_current_deployment(deployment):
 
     sf = auth_salesforce()
 
-    print(f"\nConnected to Salesforce deployment: {current_deployment['username']}\n")
+    #print(f"\nConnected to Salesforce deployment: {current_deployment['username']}\n")
 
     return sf
 
@@ -1548,7 +1549,7 @@ def main():
             exit()
 
     print_deployments()
-    firstconn = "\nConnected to Salesforce - first time\n"
+    firstconn = "\nFirst time connected to Salesforce\n"
     reconn = "\nReconnected to Salesforce\n"
 
     exit_loop = False
