@@ -64,6 +64,7 @@ The app runs as a while loop prompting the user for actions like:
 1. show picklists values for account, contact, opportunity and contact role objects
 1. allow picklist support for: lead source (contact), type (account), industry (account), Subject (task)
 1. a global settings for additional account and contact columns to retrieve.
+1. change salesforce deloyments (up to 2)
 
 > Currently am not providing delete functionality for opportunities (revenue) by design.
 

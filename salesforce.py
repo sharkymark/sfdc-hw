@@ -1490,6 +1490,30 @@ def switch_deployment():
     print(f"\nSwitched successfully to Salesforce deployment {deployment_choice['username']}.")
     return set_current_deployment(deployment_choice)
 
+def print_object_counts(sf):
+
+    # Count the total number of Accounts
+    account_count_query = "SELECT COUNT() FROM Account"
+    account_count = sf.query(account_count_query)['totalSize']
+
+    # Similarly, for other objects:
+    contact_count_query = "SELECT COUNT() FROM Contact"
+    contact_count = sf.query(contact_count_query)['totalSize']
+
+    opportunity_count_query = "SELECT COUNT() FROM Opportunity"
+    opportunity_count = sf.query(opportunity_count_query)['totalSize']
+
+    task_count_query = "SELECT COUNT() FROM Task"
+    task_count = sf.query(task_count_query)['totalSize']
+
+    print("\nDeployment counts:\n")
+    print(f"  accounts: {account_count}")
+    print(f"  contacts: {contact_count}")
+    print(f"  opportunities: {opportunity_count}")
+    print(f"  tasks: {task_count}")
+
+
+
 def set_current_deployment(deployment):
     global current_deployment
 
@@ -1497,7 +1521,7 @@ def set_current_deployment(deployment):
 
     sf = auth_salesforce()
 
-    #print(f"\nConnected to Salesforce deployment: {current_deployment['username']}\n")
+    print_object_counts(sf)
 
     return sf
 
