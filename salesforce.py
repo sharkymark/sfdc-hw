@@ -166,7 +166,7 @@ def delete_accounts(sf, query):
     try:
         accounts = sf.query(query)
     except requests.exceptions.ConnectionError:
-        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        sf = auth_salesforce()
         print(reconn)
         accounts = sf.query(query)
 
@@ -215,7 +215,7 @@ def delete_contacts(sf, query):
     try:
         contacts = sf.query(query)
     except requests.exceptions.ConnectionError:
-        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        sf = auth_salesforce()
         print(reconn)
         contacts = sf.query(query)
 
@@ -283,7 +283,7 @@ def get_contacts_for_account(sf, account_id):
         try:
             contacts = sf.query(contact_query)
         except requests.exceptions.ConnectionError:
-            sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+            sf = auth_salesforce()
             print(reconn)
             contacts = sf.query(contact_query)
         print("\nContacts query: ", contact_query)
@@ -381,7 +381,7 @@ def get_contactdetails(sf, contact_id):
     try:
         contact_result = sf.query(contact_query)
     except requests.exceptions.ConnectionError:
-        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        sf = auth_salesforce()
         print(reconn)
         contact_result = sf.query(contact_query)
 
@@ -398,7 +398,7 @@ def get_accountdetails(sf, account_id):
     try:
         account_result = sf.query(account_query)
     except requests.exceptions.ConnectionError:
-        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        sf = auth_salesforce()
         print(reconn)
         account_result = sf.query(account_query)
 
@@ -415,7 +415,7 @@ def get_opportunitydetails(sf, opportunity_id):
     try:
         opp_result = sf.query(opp_query)
     except requests.exceptions.ConnectionError:
-        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        sf = auth_salesforce()
         print(reconn)
         opp_result = sf.query(opp_query)
 
@@ -431,7 +431,7 @@ def get_contacts(sf):
     try:
         contacts = sf.query(query)
     except requests.exceptions.ConnectionError:
-        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        sf = auth_salesforce()
         print(reconn)
         contacts = sf.query(query)
 
@@ -450,7 +450,7 @@ def delete_contact_roles(sf):
     try:
         contacts = sf.query(query)
     except requests.exceptions.ConnectionError:
-        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        sf = auth_salesforce()
         print(reconn)
         contacts = sf.query(query)
 
@@ -552,7 +552,7 @@ def add_contactrole(sf,opp):
         try:
             contactrole = sf.OpportunityContactRole.create({'OpportunityId': opp['Id'], 'ContactId': contact_id, 'Role': opp_contact_role_value, 'IsPrimary': is_primary})
         except requests.exceptions.ConnectionError:
-            sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+            sf = auth_salesforce()
             print(reconn)
             contactrole = sf.OpportunityContactRole.create({'OpportunityId': opp['Id'], 'ContactId': contact_id, 'Role': role, 'IsPrimary': is_primary})
 
@@ -571,7 +571,7 @@ def get_contactroles(sf, opp):
     try:
         contactroles = sf.query(query)
     except requests.exceptions.ConnectionError:
-        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        sf = auth_salesforce()
         print(reconn)
         contactroles = sf.query(query)
 
@@ -878,7 +878,7 @@ def get_opportunities(sf, opp_name, stagename, sort, datefilter):
     try:
         opps = sf.query(query)
     except requests.exceptions.ConnectionError:
-        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        sf = auth_salesforce()
         print(reconn)
         opps = sf.query(query)
 
@@ -1084,7 +1084,7 @@ def create_task(sf, contact_id, account_id, opp_id):
             get_print_account_opp_contact(sf, "Task", subject_value, description, contact_id, account_id, opp_id)
 
         except requests.exceptions.ConnectionError:
-            sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+            sf = auth_salesforce()
             print(reconn)
             sf.Task.create({
                 'Subject': subject,
@@ -1171,7 +1171,7 @@ def search_tasks(sf):
         try:
             tasks = sf.query(query)
         except requests.exceptions.ConnectionError:
-            sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+            sf = auth_salesforce()
             print(reconn)
             tasks = sf.query(query)
 
@@ -1244,7 +1244,7 @@ def get_tasks(sf, contact_id, account_id, opp_id):
     try:
         tasks = sf.query(query)
     except requests.exceptions.ConnectionError:
-        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+        sf = auth_salesforce()
         print(reconn)
         tasks = sf.query(query)
 
@@ -1285,7 +1285,7 @@ def search_contacts(sf):
         try:
             contacts = sf.query(query)
         except requests.exceptions.ConnectionError:
-            sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+            sf = auth_salesforce()
             print(reconn)
             contacts = sf.query(query)
             print(f"Contact query: ", query)
@@ -1461,11 +1461,57 @@ def check_debug_mode():
     else:
         print("\nDebug mode is disabled\n")
 
+def auth_salesforce():
+
+    return simple_salesforce.Salesforce(username=current_deployment['username'], password=current_deployment['password'], security_token=current_deployment['security_token'])
+
+def switch_deployment():
+    global current_deployment
+
+    print(f"\n\nCurrent deployment: {current_deployment['username']}\n")
+
+    deployments = [deployment1, deployment2] 
+
+    print("Select Salesforce deployment to switch to: \n")
+    for i, deployment in enumerate(deployments):
+        if deployment["username"] and deployment["password"] and deployment["security_token"]:
+            print(f"{i+1}. username: {deployment['username']}")
+
+    deployment_choice = input(f"\nEnter: ")
+
+    if deployment_choice == '1':
+        return set_current_deployment(deployment1)
+    elif deployment_choice == '2':
+        return set_current_deployment(deployment2)
+    else:
+        print("Invalid choice. Returning to main menu.")
+        return
+
+    print("Salesforce deployment switched successfully.")
+
+def set_current_deployment(deployment):
+    global current_deployment
+
+    current_deployment = deployment
+
+    sf = auth_salesforce()
+
+    print(f"\nConnected to Salesforce deployment: {current_deployment['username']}\n")
+
+    return sf
+
+def print_deployments():
+
+    print("\nSalesforce deployments:\n")
+    for i, deployment in enumerate(deployments):
+        if deployment == current_deployment:
+            print(f"{i+1}. username: {deployment['username']} - current deployment")
+        else:
+            print(f"{i+1}. username: {deployment['username']}")
+
 def main():
 
-    global username
-    global password
-    global security_token
+    global deployments, deployment1, deployment2, current_deployment
     global lead_source_options
     global industry_options
     global type_options
@@ -1477,9 +1523,31 @@ def main():
     global firstconn
     global reconn
 
-    username = os.environ['SALESFORCE_USERNAME']
-    password = os.environ['SALESFORCE_PASSWORD']
-    security_token = os.environ['SALESFORCE_SECURITY_TOKEN']
+    deployment1 = {
+        "username": os.environ.get('SALESFORCE_USERNAME_1'),
+        "password": os.environ.get('SALESFORCE_PASSWORD_1'),
+        "security_token": os.environ.get('SALESFORCE_SECURITY_TOKEN_1')
+    }
+
+    deployment2 = {
+        "username": os.environ.get('SALESFORCE_USERNAME_2'),
+        "password": os.environ.get('SALESFORCE_PASSWORD_2'),
+        "security_token": os.environ.get('SALESFORCE_SECURITY_TOKEN_2')
+    }
+
+    deployments = [deployment1, deployment2]
+
+    # find the first available deployment
+    for deployment in deployments:
+        if deployment['username'] and deployment['password'] and deployment['security_token']:
+            current_deployment = deployment
+            break
+        else:
+            current_deployment = None
+            print("No deployments found. Please set environment variables for Salesforce deployments.")
+            exit()
+
+    print_deployments()
     firstconn = "\nConnected to Salesforce - first time\n"
     reconn = "\nReconnected to Salesforce\n"
 
@@ -1491,7 +1559,7 @@ def main():
     check_debug_mode()
 
     # Create a Salesforce connection
-    sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+    sf = set_current_deployment(current_deployment)
     print(firstconn)
 
     account_picklists = get_account_picklists(sf)
@@ -1531,6 +1599,7 @@ def main():
             'dc' to delete a contact,
             'd' to describe object schemas,
             'pl' to show opportunity, account, contact, contact role picklists,
+            'sd' to switch salesforce deployment,
             'p' for global preferences,
             'q' to exit:
             
@@ -1538,7 +1607,8 @@ def main():
 
             if action.lower() == 'q':
                 break
-
+            elif action.lower() == 'sd':
+                sf = switch_deployment()
             elif action.lower() == 'st':
                 search_tasks(sf)
             elif action.lower() == 'pl':                 
@@ -1586,7 +1656,7 @@ def main():
                     try:
                         account_results = sf.query(query)
                     except requests.exceptions.ConnectionError:
-                        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                        sf = auth_salesforce()
                         print(reconn)
                         account_results = sf.query(query)
 
@@ -1668,7 +1738,7 @@ def main():
                         try:
                             opportunity = sf.Opportunity.create({'AccountId': account_id, 'Name': name,  'Type': type_value, 'StageName': stage_value,  'LeadSource': source_value, 'CloseDate': close_date, 'Amount': amount, 'Description': description, 'NextStep': next_step})
                         except requests.exceptions.ConnectionError:
-                            sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                            sf = auth_salesforce()
                             print(reconn)
                             opportunity = sf.Opportunity.create({'AccountId': account_id, 'Name': name,  'Type': type_value, 'StageName': stage_value,  'LeadSource': source_value, 'CloseDate': close_date, 'Amount': amount, 'Description': description, 'NextStep': next_step})
 
@@ -1715,7 +1785,7 @@ def main():
                     try:
                         account = sf.Account.create({'Name': name, 'Website': website, 'Description': description, 'Industry': industry_value, 'Type': type_value})
                     except requests.exceptions.ConnectionError:
-                        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                        sf = auth_salesforce()
                         print(reconn)
                         account = sf.Account.create({'Name': name, 'Website': website, 'Description': description, 'Industry': industry_value, 'Type': type_value})
 
@@ -1735,7 +1805,7 @@ def main():
                     try:
                         account_results = sf.query(query)
                     except requests.exceptions.ConnectionError:
-                        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                        sf = auth_salesforce()
                         print(reconn)
                         account_results = sf.query(query)
 
@@ -1802,7 +1872,7 @@ def main():
                     try:
                         accounts = sf.query(query)
                     except requests.exceptions.ConnectionError:
-                        sf = simple_salesforce.Salesforce(username=username, password=password, security_token=security_token)
+                        sf = auth_salesforce()
                         print(reconn)
                         accounts = sf.query(query)
 

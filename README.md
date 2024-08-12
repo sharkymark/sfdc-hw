@@ -10,20 +10,34 @@ This example uses Python and is a command line application
 
 ## API
 
-Simple Salesforce is a basic Salesforce.com REST API client built for Python 3.8, 3.9, 3.10, 3.11, and 3.12. The goal is to provide a very low-level interface to the REST Resource and APEX API, returning a dictionary of the API JSON response. 
+Simple Salesforce is a basic Salesforce.com client built for Python. It uses username, password and security token authentication via SOAP to generate a session Id used for subsequent REST APIs calls.  See [sfdc-go](https://github.com/sharkymark/sfdc-go) for an example of using OAuth2 and Salesforce Connected App's Consumer Key and Consumer Secret and the deployment's Salesforce instance Url. Simple Salesforce supposedly has OAuth support but I have not tested it.
 
 ## Authentication
 
-Credentials include username, password and token. They are read as environment variables which you place in `.zshrc` or `.bashrc`
+Credentials include username, password, and token. They are read as environment variables which you place in `.zshrc` or `.bashrc`
 
 ```sh
 # set SalesForce environment variables
-export SALESFORCE_USERNAME=""
-export SALESFORCE_PASSWORD=""
-export SALESFORCE_SECURITY_TOKEN=""
+export SALESFORCE_USERNAME_1=""
+export SALESFORCE_PASSWORD_1=""
+export SALESFORCE_SECURITY_TOKEN_1=""
 ```
 
 Retrieve the security token from the Salesforce UI, View Profile -> Settings -> Reset My Security Token
+
+## Multiple Salesforce deployment support
+
+The app allows up to 2 Salesforce deployments. When the app starts, the first one entered is loaded. There is an action in the CLI to switch to another deployment if environment variables have been entered.
+
+```sh
+# set environment variables
+export SALESFORCE_USERNAME_1=""
+export SALESFORCE_PASSWORD_1=""
+export SALESFORCE_SECURITY_TOKEN_1=""
+export SALESFORCE_USERNAME_2=""
+export SALESFORCE_PASSWORD_2=""
+export SALESFORCE_SECURITY_TOKEN_2=""
+```
 
 ## Run the app
 
