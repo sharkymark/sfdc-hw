@@ -39,6 +39,10 @@ export SALESFORCE_PASSWORD_2=""
 export SALESFORCE_SECURITY_TOKEN_2=""
 ```
 
+## Developer Salesforce license
+
+Register for [a complimentary developer account](https://developer.salesforce.com/signup) to use with Salesforce API testing
+
 ## Run the app
 
 `cd` into the repo directory and run the app
