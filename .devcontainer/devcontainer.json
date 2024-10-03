@@ -5,9 +5,12 @@
       "context": ".."
     },
     "containerEnv": {
-      "SALESFORCE_USERNAME": "${localEnv:SALESFORCE_USERNAME}",
-      "SALESFORCE_PASSWORD": "${localEnv:SALESFORCE_PASSWORD}",
-      "SALESFORCE_SECURITY_TOKEN": "${localEnv:SALESFORCE_SECURITY_TOKEN}"
+      "SALESFORCE_USERNAME_1": "${localEnv:SALESFORCE_USERNAME_1}",
+      "SALESFORCE_PASSWORD_1": "${localEnv:SALESFORCE_PASSWORD_1}",
+      "SALESFORCE_SECURITY_TOKEN_1": "${localEnv:SALESFORCE_SECURITY_TOKEN_1}",
+      "SALESFORCE_USERNAME_2": "${localEnv:SALESFORCE_USERNAME_2}",
+      "SALESFORCE_PASSWORD_2": "${localEnv:SALESFORCE_PASSWORD_2}",
+      "SALESFORCE_SECURITY_TOKEN_2": "${localEnv:SALESFORCE_SECURITY_TOKEN_2}"      
     },
     "customizations": {
       "vscode": {
