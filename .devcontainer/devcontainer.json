@@ -24,7 +24,7 @@
         }  
       }
     },
-    "postCreateCommand": "python3 salesforce.py"
+    "postStartCommand": "python3 salesforce.py"
     }
 
   
