@@ -43,6 +43,30 @@ export SALESFORCE_SECURITY_TOKEN_2=""
 
 Register for [a complimentary developer account](https://developer.salesforce.com/signup) to use with Salesforce API testing
 
+## Requirements
+
+- Python 3.8+
+- Required packages (see requirements.txt)
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/sharkymark/sfdc-hw.git
+   cd sfdc-hw
+   ```
+
+1. Create and activate a virtual environment:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
 ## Run the app
 
 `cd` into the repo directory and run the app
