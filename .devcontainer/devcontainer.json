@@ -7,7 +7,8 @@
     "containerEnv": {
       "SALESFORCE_USERNAME": "${localEnv:SALESFORCE_USERNAME}",
       "SALESFORCE_PASSWORD": "${localEnv:SALESFORCE_PASSWORD}",
-      "SALESFORCE_SECURITY_TOKEN": "${localEnv:SALESFORCE_SECURITY_TOKEN}"
+      "SALESFORCE_SECURITY_TOKEN": "${localEnv:SALESFORCE_SECURITY_TOKEN}",
+      "LUNAR_PROXY_HOST": "${localEnv:LUNAR_PROXY_HOST}"
     },
     "customizations": {
       "vscode": {
@@ -21,7 +22,10 @@
         }  
       }
     },
-    "postCreateCommand": "python3 salesforce.py"
+    "postCreateCommand": "python3 salesforce.py",
+    "runArgs": [
+        "--network", "host"
+    ]
     }
 
   

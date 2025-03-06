@@ -1,0 +1,2 @@
+simple_salesforce
+lunar_interceptor==0.4.*
