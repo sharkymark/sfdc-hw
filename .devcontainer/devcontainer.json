@@ -10,7 +10,10 @@
       "SALESFORCE_SECURITY_TOKEN_1": "${localEnv:SALESFORCE_SECURITY_TOKEN_1}",
       "SALESFORCE_USERNAME_2": "${localEnv:SALESFORCE_USERNAME_2}",
       "SALESFORCE_PASSWORD_2": "${localEnv:SALESFORCE_PASSWORD_2}",
-      "SALESFORCE_SECURITY_TOKEN_2": "${localEnv:SALESFORCE_SECURITY_TOKEN_2}"      
+      "SALESFORCE_SECURITY_TOKEN_2": "${localEnv:SALESFORCE_SECURITY_TOKEN_2}",
+      "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
+      "GITHUB_USER_NAME": "${localEnv:GITHUB_USER_NAME}",   
+      "GITHUB_USER_EMAIL": "${localEnv:GITHUB_USER_EMAIL}" 
     },
     "customizations": {
       "vscode": {
@@ -26,7 +29,7 @@
         }  
       }
     },
-    "postStartCommand": "python3 salesforce.py"
+    "postStartCommand": "git config --global user.name \"{GITHUB_USER_NAME}\" && git config --global user.email \"{GITHUB_USER_EMAIL}\" && git config --global url.\"https://${GITHUB_TOKEN}@github.com/\".insteadOf \"https://github.com/\" && python3 salesforce.py"
     }
 
   
