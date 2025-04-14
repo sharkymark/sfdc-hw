@@ -1,7 +1,7 @@
 {
     "name": "Salesforce Account Lookup",
     "build": {
-      "dockerfile": "../Dockerfile",
+      "dockerfile": "Dockerfile",
       "context": ".."
     },
     "containerEnv": {
