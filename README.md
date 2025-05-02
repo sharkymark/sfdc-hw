@@ -96,6 +96,13 @@ The app runs as a while loop prompting the user for actions like:
 
 Notice the `Dockerfile` and `devcontainer.json` which uses a slim Python container image, adds the `simple_salesforce` module with `pip` in the Dockerfile, and passes the Salesforce authentication environment variables into the dev container.
 
+Additional tooling added to the dev container includes:
+- AI coding agents: Aider, Goose
+- GitHub CLI
+- GitHub Copilot, Python, Pylance VS Code extension
+- GitHub Personal Access Token (PAT) passed as an environment variable into the dev container
+- GitHub CLI authentication with the PAT
+
 This approach frees you up from having a specific Python version and module on your local machine e.g., Mac and let the dev container set all of this up. You do still need to set the environment variables locally which is more secure and better than putting into the repo with .gitignore. ☠️
 
 ## Resources
