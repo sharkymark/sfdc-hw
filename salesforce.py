@@ -819,7 +819,7 @@ def get_opportunities(sf, opp_name, stagename, sort, datefilter):
         stagename = ""
 
         if option == 1:
-            stagename = " AND (StageName <> 'Closed Won' OR StageName <> 'Closed Lost')"
+            stagename = " AND (StageName <> 'Closed Won' AND StageName <> 'Closed Lost')"
         elif option == 2:
             stagename = " AND StageName = 'Closed Won'"
         elif option == 3:
