@@ -10,17 +10,20 @@ This example uses Python and is a command line application
 
 ## API
 
-Simple Salesforce is a basic Salesforce.com client built for Python. It uses username, password and security token authentication via SOAP to generate a session Id used for subsequent REST APIs calls.  See [sfdc-go](https://github.com/sharkymark/sfdc-go) for an example of using OAuth2 and Salesforce Connected App's Consumer Key and Consumer Secret and the deployment's Salesforce instance Url. Simple Salesforce supposedly has OAuth support but I have not tested it.
+Simple Salesforce is a basic Salesforce.com client built for Python. It uses username, password, security token, and domain authentication via SOAP to generate a session Id used for subsequent REST APIs calls.  See [sfdc-go](https://github.com/sharkymark/sfdc-go) for an example of using OAuth2 and Salesforce Connected App's Consumer Key and Consumer Secret and the deployment's Salesforce instance Url. Simple Salesforce supposedly has OAuth support but I have not tested it.
+
+domain does not include https or salesforce.com. Simple Salesforce handles that. Only organization.my where organization is defined in your Salesforce instance, and usually visible when you click on the user's profile icon on the top right.
 
 ## Authentication
 
-Credentials include username, password, and token. They are read as environment variables which you place in `.zshrc` or `.bashrc`
+Credentials include username, password, token, and domain. They are read as environment variables which you place in `.zshrc` or `.bashrc`
 
 ```sh
 # set SalesForce environment variables
 export SALESFORCE_USERNAME_1=""
 export SALESFORCE_PASSWORD_1=""
 export SALESFORCE_SECURITY_TOKEN_1=""
+export SALESFORCE_DOMAIN_1=""
 ```
 
 Retrieve the security token from the Salesforce UI, View Profile -> Settings -> Reset My Security Token
@@ -34,9 +37,11 @@ The app allows up to 2 Salesforce deployments. When the app starts, the first on
 export SALESFORCE_USERNAME_1=""
 export SALESFORCE_PASSWORD_1=""
 export SALESFORCE_SECURITY_TOKEN_1=""
+export SALESFORCE_DOMAIN_1=""
 export SALESFORCE_USERNAME_2=""
 export SALESFORCE_PASSWORD_2=""
 export SALESFORCE_SECURITY_TOKEN_2=""
+export SALESFORCE_DOMAIN_2=""
 ```
 
 ## Developer Salesforce license
