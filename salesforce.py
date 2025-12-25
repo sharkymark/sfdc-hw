@@ -1463,7 +1463,7 @@ def check_debug_mode():
 
 def auth_salesforce():
 
-    return simple_salesforce.Salesforce(username=current_deployment['username'], password=current_deployment['password'], security_token=current_deployment['security_token'])
+    return simple_salesforce.Salesforce(username=current_deployment['username'], password=current_deployment['password'], security_token=current_deployment['security_token'], domain=current_deployment['domain'])
 
 def switch_deployment():
     global current_deployment
@@ -1474,7 +1474,7 @@ def switch_deployment():
 
     print("Select Salesforce deployment to switch to: \n")
     for i, deployment in enumerate(deployments):
-        if deployment["username"] and deployment["password"] and deployment["security_token"]:
+        if deployment["username"] and deployment["password"] and deployment["security_token"] and deployment['domain']:
             print(f"{i+1}. username: {deployment['username']}")
 
     deployment_choice = input(f"\nEnter: ")
@@ -1551,14 +1551,17 @@ def main():
     deployment1 = {
         "username": os.environ.get('SALESFORCE_USERNAME_1'),
         "password": os.environ.get('SALESFORCE_PASSWORD_1'),
-        "security_token": os.environ.get('SALESFORCE_SECURITY_TOKEN_1')
+        "security_token": os.environ.get('SALESFORCE_SECURITY_TOKEN_1'),
+        "domain": os.environ.get('SALESFORCE_DOMAIN_1')
     }
 
     deployment2 = {
         "username": os.environ.get('SALESFORCE_USERNAME_2'),
         "password": os.environ.get('SALESFORCE_PASSWORD_2'),
-        "security_token": os.environ.get('SALESFORCE_SECURITY_TOKEN_2')
-    }
+        "security_token": os.environ.get('SALESFORCE_SECURITY_TOKEN_2'),
+        "domain": os.environ.get('SALESFORCE_DOMAIN_2')
+
+        }
 
     deployments = [deployment1, deployment2]
 
